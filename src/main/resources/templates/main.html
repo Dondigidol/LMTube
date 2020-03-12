@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<a href="/">Главная страница</a>
+<a href="/add-video">Добавить видео</a>
+<hr>
+    <table>
+        <tr th:each="video: ${videos}">
+            <td th:text="${video.id}"/>
+            <td th:text="${video.name}"/>
+            <td th:text="${video.description}"/>
+        </tr>
+    </table>
+</body>
+</html>

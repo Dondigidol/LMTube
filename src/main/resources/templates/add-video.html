@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="js/addVideo.js"></script>
+</head>
+<body>
+<form method="post" th:action="@{/uploadVideo}" enctype="multipart/form-data">
+    <label for = "videoForUpload">Загрузите видео</label>
+    <input type="file" name = "videoForUpload" id = "videoForUpload" accept=".avi,.mov,.mp4,.mpg"/>
+    <input id="videoSubmit" type="submit"/>
+</form>
+<form method="post" th:action="@{/add-video}">
+    <label for="name">Название: </label><input type="text" id="name" name="name"/><br>
+    <label for="description">Описание: </label><input type="text" id="description" name="description"/><br>
+    <label for="isCommented">Возможность комментирования: </label><input type="checkbox" id="isCommented" name="isCommented"/><br>
+    <label for="isActive">Активировать: </label><input type="checkbox" id="isActive" name="isActive"/><br>
+    <input type="submit"/>
+</form>
+<p th:text="${message}"></p>
+</body>
+</html>
