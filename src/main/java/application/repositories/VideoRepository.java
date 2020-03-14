@@ -7,6 +7,8 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface VideoRepository extends CrudRepository<Video, UUID> {
+public interface VideoRepository extends CrudRepository<Video, Long> {
+
+    Video findByVideoId(String videoId);
 
 }

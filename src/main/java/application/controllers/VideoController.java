@@ -1,5 +1,6 @@
 package application.controllers;
 
+import application.entities.Video;
 import application.repositories.VideoRepository;
 import application.services.NameGeneratorService;
 import application.services.VideoService;
@@ -11,14 +12,18 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 public class VideoController {
 
-    @GetMapping("/video")
-    public String getVideo(@RequestParam(required = false) Long id,
-                           Model model){
+    @Autowired
+    private VideoService videoService;
 
-        model.addAttribute("id", String.valueOf(id));
+    @GetMapping("/video")
+    public String getVideo(@RequestParam("id") String id,
+                           Model model){
+        Video video = videoService.getByVideoId(id);
+
+        model.addAttribute("videoSource", "./videos/" + video.getFileName());
+        model.addAttribute("name", video.getName());
+        model.addAttribute("description", video.getDescription());
+
         return "video";
     }
-
-
-
 }

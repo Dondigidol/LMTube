@@ -7,9 +7,9 @@ import java.util.UUID;
 @Component
 public class NameGeneratorService {
 
-    public String getUniqueName(){
+    public UUID getUniqueName(){
         UUID uuid = UUID.randomUUID();
-        return uuid.toString();
+        return uuid;
     }
 
     public String getExtension(String fileName){

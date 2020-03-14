@@ -20,4 +20,8 @@ public class VideoService {
     public Iterable<Video> getAllVideo(){
         return videoRepository.findAll();
     }
+
+    public Video getByVideoId(String videoId){
+        return videoRepository.findByVideoId(videoId);
+    }
 }

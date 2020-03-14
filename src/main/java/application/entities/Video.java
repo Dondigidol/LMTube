@@ -1,9 +1,10 @@
 package application.entities;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import application.services.NameGeneratorService;
+import org.hibernate.annotations.NaturalId;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.persistence.*;
 import java.util.Date;
 import java.util.UUID;
 
@@ -12,8 +13,10 @@ import java.util.UUID;
 public class Video {
 
     @Id
-    @GeneratedValue
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @NaturalId
+    private String videoId;
     private String fileName;
     private String name;
     private String description;
@@ -23,8 +26,16 @@ public class Video {
     private boolean isActive;
     private Date date;
 
-    public UUID getId() {
+    public Long getId() {
         return id;
+    }
+
+    public String getVideoId() {
+        return videoId;
+    }
+
+    public void setVideoId(String videoId) {
+        this.videoId = videoId;
     }
 
     public String getFileName() {
@@ -95,6 +106,7 @@ public class Video {
     public String toString(){
         return "Video{" +
                 "id=" + this.id +
+                ",videoId=" + this.videoId +
                 ",filename=" + this.fileName +
                 ",name=" + this.name +
                 ",description=" + this.description +
