@@ -1,10 +1,12 @@
 package application.entities;
 
-import application.services.NameGeneratorService;
-import org.hibernate.annotations.NaturalId;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.content.commons.annotations.ContentId;
+import org.springframework.content.commons.annotations.ContentLength;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import java.util.Date;
 import java.util.UUID;
 
@@ -13,11 +15,8 @@ import java.util.UUID;
 public class Video {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @NaturalId
-    private String videoId;
-    private String fileName;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private long id;
     private String name;
     private String description;
     private double rating;
@@ -26,24 +25,44 @@ public class Video {
     private boolean isActive;
     private Date date;
 
-    public Long getId() {
+    @ContentId
+    private String fileId;
+    @ContentLength
+    private long contentLength;
+    private String mimeType;
+
+    public String getFileId() {
+        return fileId;
+    }
+
+    public void setFileId(String fileId) {
+        this.fileId = fileId;
+    }
+
+    public long getContentLength() {
+        return contentLength;
+    }
+
+    public void setContentLength(long contentLength) {
+        this.contentLength = contentLength;
+    }
+
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
+    }
+
+    // Constructors
+    public Video(){}
+
+
+    //-------------
+
+    public long getId() {
         return id;
-    }
-
-    public String getVideoId() {
-        return videoId;
-    }
-
-    public void setVideoId(String videoId) {
-        this.videoId = videoId;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
     }
 
     public String getName() {
@@ -106,8 +125,8 @@ public class Video {
     public String toString(){
         return "Video{" +
                 "id=" + this.id +
-                ",videoId=" + this.videoId +
-                ",filename=" + this.fileName +
+                ",fileId=" + this.fileId +
+                ",mimeType=" + this.mimeType +
                 ",name=" + this.name +
                 ",description=" + this.description +
                 ",rating=" + this.rating +

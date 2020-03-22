@@ -11,7 +11,7 @@
     <table>
         <tr th:each="video: ${videos}">
             <td th:text="${video.name}"/>
-            <td><a th:href="@{video(id=${video.videoId})}">ссылка</a></td>
+            <td><a th:href="@{video(id=${video.id})}">ссылка</a></td>
             <td th:text="${video.description}"/>
         </tr>
     </table>

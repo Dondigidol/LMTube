@@ -9,6 +9,4 @@ import java.util.UUID;
 @Repository
 public interface VideoRepository extends CrudRepository<Video, Long> {
 
-    Video findByVideoId(String videoId);
-
 }

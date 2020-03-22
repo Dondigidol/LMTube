@@ -6,6 +6,9 @@
     <script type="text/javascript" src="js/addVideo.js"></script>
 </head>
 <body>
+<a href="/">Главная страница</a>
+<a href="/add-video">Добавить видео</a>
+<hr>
 <form method="post" th:action="@{/add-video}" enctype="multipart/form-data">
     <label for = "videoForUpload">Загрузите видео</label>
     <input type="file" name = "videoForUpload" id = "videoForUpload" accept=".avi,.mov,.mp4,.mpg"/><br>

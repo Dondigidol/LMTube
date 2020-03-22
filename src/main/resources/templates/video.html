@@ -5,8 +5,11 @@
     <title>Title</title>
 </head>
 <body>
-    <video controls="controls">
-        <source th:src="${videoSource}">
+<a href="/">Главная страница</a>
+<a href="/add-video">Добавить видео</a>
+<hr>
+    <video preload="auto" autoplay="autoplay"  width="600" height="400" controls>
+        <source th:src="${videoSource}" th:type="${mimeType}">
         Your browser does not support the video tag.
     </video>
     <p th:text="${name}"/>
