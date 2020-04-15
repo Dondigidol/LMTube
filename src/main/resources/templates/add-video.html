@@ -7,12 +7,12 @@
 </head>
 <body>
 <a href="/">Главная страница</a>
-<a href="/add-video">Добавить видео</a>
+<a href="/video/add-video">Добавить видео</a>
 <hr>
-<form method="post" th:action="@{/add-video}" enctype="multipart/form-data">
+<form method="post" th:action="@{/video/add-video}" enctype="multipart/form-data">
     <label for = "videoForUpload">Загрузите видео</label>
     <input type="file" name = "videoForUpload" id = "videoForUpload" accept=".avi,.mov,.mp4,.mpg"/><br>
-    <label for="name">Название: </label><input type="text" id="name" name="name"/><br>
+    <label for="title">Название: </label><input type="text" id="title" name="title"/><br>
     <label for="description">Описание: </label><input type="text" id="description" name="description"/><br>
     <label for="isCommented">Возможность комментирования: </label><input type="checkbox" id="isCommented" name="isCommented"/><br>
     <label for="isActive">Активировать: </label><input type="checkbox" id="isActive" name="isActive"/><br>

@@ -3,90 +3,51 @@ package application.entities;
 import org.springframework.content.commons.annotations.ContentId;
 import org.springframework.content.commons.annotations.ContentLength;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Date;
-import java.util.UUID;
 
 @Entity
-
+@Table(name = "video")
 public class Video {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
-    private String name;
-    private String description;
-    private double rating;
+
+    @Column(name = "title")
+    private String title;
+
+    @Column(name = "owner")
     private long owner;
-    private boolean isCommented;
+
+    @Column(name = "is_active")
     private boolean isActive;
+
+    @Column(name = "date")
     private Date date;
 
-    @ContentId
-    private String fileId;
-    @ContentLength
-    private long contentLength;
-    private String mimeType;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "video_detail_id")
+    private VideoDetails videoDetails;
 
-    public String getFileId() {
-        return fileId;
+    public Video(){
+
     }
-
-    public void setFileId(String fileId) {
-        this.fileId = fileId;
-    }
-
-    public long getContentLength() {
-        return contentLength;
-    }
-
-    public void setContentLength(long contentLength) {
-        this.contentLength = contentLength;
-    }
-
-    public String getMimeType() {
-        return mimeType;
-    }
-
-    public void setMimeType(String mimeType) {
-        this.mimeType = mimeType;
-    }
-
-    // Constructors
-    public Video(){}
-
-
-    //-------------
 
     public long getId() {
         return id;
     }
 
-    public String getName() {
-        return name;
+    public void setId(long id) {
+        this.id = id;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getTitle() {
+        return title;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public double getRating() {
-        return rating;
-    }
-
-    public void setRating(double rating) {
-        this.rating = rating;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public long getOwner() {
@@ -95,14 +56,6 @@ public class Video {
 
     public void setOwner(long owner) {
         this.owner = owner;
-    }
-
-    public boolean isCommented() {
-        return isCommented;
-    }
-
-    public void setCommented(boolean commented) {
-        this.isCommented = commented;
     }
 
     public boolean isActive() {
@@ -121,19 +74,22 @@ public class Video {
         this.date = date;
     }
 
+    public VideoDetails getVideoDetails() {
+        return videoDetails;
+    }
+
+    public void setVideoDetails(VideoDetails videoDetails) {
+        this.videoDetails = videoDetails;
+    }
+
     @Override
-    public String toString(){
+    public String toString() {
         return "Video{" +
-                "id=" + this.id +
-                ",fileId=" + this.fileId +
-                ",mimeType=" + this.mimeType +
-                ",name=" + this.name +
-                ",description=" + this.description +
-                ",rating=" + this.rating +
-                ",owner=" + this.owner +
-                ",commenting=" + this.isCommented +
-                ",active=" + this.isActive +
-                ",date=" + this.date +
-                "}";
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", owner=" + owner +
+                ", isActive=" + isActive +
+                ", date=" + date +
+                '}';
     }
 }

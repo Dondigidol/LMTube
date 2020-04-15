@@ -6,13 +6,12 @@
 </head>
 <body>
 <a href="/">Главная страница</a>
-<a href="/add-video">Добавить видео</a>
+<a href="/video/add-video">Добавить видео</a>
 <hr>
     <table>
         <tr th:each="video: ${videos}">
-            <td th:text="${video.name}"/>
-            <td><a th:href="@{video(id=${video.id})}">ссылка</a></td>
-            <td th:text="${video.description}"/>
+            <td th:text="${video.title}"/>
+            <td><a th:href="@{/video/view(id=${video.id})}">ссылка</a></td>
         </tr>
     </table>
 </body>
