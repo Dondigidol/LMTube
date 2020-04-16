@@ -3,6 +3,7 @@ package application.controllers;
 
 import application.entities.Video;
 import application.entities.VideoDetails;
+import application.services.FileServiceImpl;
 import application.services.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -21,6 +22,9 @@ import java.util.Optional;
 public class VideoController {
 
     @Autowired
+    private FileServiceImpl fileService;
+
+    @Autowired
     private VideoService videoService;
 
     @GetMapping("/add-video")
@@ -29,31 +33,32 @@ public class VideoController {
     }
 
     @PostMapping("/add-video")
-    public String saveVideo(@RequestParam("videoForUpload") MultipartFile file,
+    public String saveVideo(@RequestParam("videoFile") MultipartFile videoFile,
+                            @RequestParam("posterFile") MultipartFile posterFile,
                             @RequestParam("title") String title,
                             @RequestParam("description") String description,
                             @RequestParam(value = "isCommented", required = false) boolean isCommented,
                             @RequestParam(value = "isActive", required = false) boolean isActive,
                             Model model){
-        if (file.isEmpty()){
+        if (videoFile.isEmpty()){
             model.addAttribute("message", "First, please upload a video file.");
+            return "add-video";
         }
 
-        Video video = new Video();
-        video.setTitle(title);
         VideoDetails videoDetails = new VideoDetails();
-        video.setVideoDetails(videoDetails);
-        video.getVideoDetails().setDescription(description);
-        video.getVideoDetails().setCommented(isCommented);
+
+        videoDetails.setDescription(description);
+        videoDetails.setCommented(isCommented);
+
+        Video video = new Video();
+
+        video.setTitle(title);
         video.setActive(isActive);
         video.setDate(new Date());
-        try {
-            videoService.saveContent(video, file.getInputStream());
-            video.getVideoDetails().setMimeType(file.getContentType());
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-        videoService.saveVideo(video);
+        video.setVideoDetails(videoDetails);
+
+        videoService.saveVideo(video, videoFile, posterFile);
+
         return "add-video";
     }
 
@@ -64,8 +69,9 @@ public class VideoController {
         if (v.isPresent()){
             Video video = v.get();
             model.addAttribute("videoSource", "/api/video/"+video.getId());
-            model.addAttribute("mimeType", video.getVideoDetails().getMimeType());
-            model.addAttribute("name", video.getTitle());
+            model.addAttribute("posterSource", "/api/video/poster/"+video.getId());
+            model.addAttribute("videoMimeType", video.getVideoDetails().getVideoMimeType());
+            model.addAttribute("title", video.getTitle());
             model.addAttribute("description", video.getVideoDetails().getDescription());
         }
         return "video";

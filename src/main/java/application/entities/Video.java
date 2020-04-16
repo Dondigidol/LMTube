@@ -5,6 +5,7 @@ import org.springframework.content.commons.annotations.ContentLength;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.HashSet;
 
 @Entity
 @Table(name = "video")
@@ -25,6 +26,12 @@ public class Video {
 
     @Column(name = "date")
     private Date date;
+
+    @Column(name = "views")
+    private long views;
+
+    @Column(name = "tags")
+    private HashSet<String> tags;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "video_detail_id")
@@ -74,6 +81,22 @@ public class Video {
         this.date = date;
     }
 
+    public long getViews() {
+        return views;
+    }
+
+    public void setViews(long views) {
+        this.views = views;
+    }
+
+    public HashSet<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(HashSet<String> tags) {
+        this.tags = tags;
+    }
+
     public VideoDetails getVideoDetails() {
         return videoDetails;
     }
@@ -81,6 +104,7 @@ public class Video {
     public void setVideoDetails(VideoDetails videoDetails) {
         this.videoDetails = videoDetails;
     }
+
 
     @Override
     public String toString() {
@@ -90,6 +114,9 @@ public class Video {
                 ", owner=" + owner +
                 ", isActive=" + isActive +
                 ", date=" + date +
+                ", views=" + views +
+                ", tags=" + tags +
+                ", videoDetails=" + videoDetails +
                 '}';
     }
 }

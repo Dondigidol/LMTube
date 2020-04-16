@@ -10,8 +10,10 @@
 <a href="/video/add-video">Добавить видео</a>
 <hr>
 <form method="post" th:action="@{/video/add-video}" enctype="multipart/form-data">
-    <label for = "videoForUpload">Загрузите видео</label>
-    <input type="file" name = "videoForUpload" id = "videoForUpload" accept=".avi,.mov,.mp4,.mpg"/><br>
+    <label for = "videoFile">Загрузите видео</label>
+    <input type="file" name = "videoFile" id = "videoFile" accept=".avi,.mov,.mp4,.mpg"/><br>
+    <label for = "posterFile">Загрузите постер</label>
+    <input type="file" name = "posterFile" id = "posterFile" accept=".png,.jpg,.jpeg,.bmp"/><br>
     <label for="title">Название: </label><input type="text" id="title" name="title"/><br>
     <label for="description">Описание: </label><input type="text" id="description" name="description"/><br>
     <label for="isCommented">Возможность комментирования: </label><input type="checkbox" id="isCommented" name="isCommented"/><br>

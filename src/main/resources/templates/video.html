@@ -8,11 +8,11 @@
 <a href="/">Главная страница</a>
 <a href="/video/add-video">Добавить видео</a>
 <hr>
-    <video preload="auto" autoplay="autoplay"  width="600" height="400" controls>
-        <source th:src="${videoSource}" th:type="${mimeType}">
+    <video th:poster="${posterSource}" preload="auto" autoplay="autoplay"  width="600" height="400" controls>
+        <source th:src="${videoSource}" th:type="${videoMimeType}">
         Your browser does not support the video tag.
     </video>
-    <p th:text="${name}"/>
+    <p th:text="${title}"/>
     <p th:text="${description}"/>
 </body>
 </html>

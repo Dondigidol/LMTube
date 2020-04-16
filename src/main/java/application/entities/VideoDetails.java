@@ -1,10 +1,6 @@
 package application.entities;
 
 
-import org.springframework.content.commons.annotations.ContentId;
-import org.springframework.content.commons.annotations.ContentLength;
-import org.springframework.content.commons.annotations.MimeType;
-
 import javax.persistence.*;
 
 @Entity
@@ -18,17 +14,23 @@ public class VideoDetails {
     @Column(name = "description")
     private String description;
 
-    @ContentId
-    @Column(name = "file_id")
-    private String fileId;
+    @Column(name = "video_file_id")
+    private String videoFileId;
 
-    @MimeType
-    @Column(name = "mime_type")
-    private String mimeType;
+    @Column(name = "video_mime_type")
+    private String videoMimeType;
 
-    @ContentLength
-    @Column(name = "content_length")
-    private long contentLength;
+    @Column(name = "video_content_length")
+    private long videoContentLength;
+
+    @Column(name = "poster_file_id")
+    private String posterFileId;
+
+    @Column(name = "poster_mime_type")
+    private String posterMimeType;
+
+    @Column(name = "poster_content_length")
+    private long posterContentLength;
 
     @Column(name = "rating")
     private float rating;
@@ -58,28 +60,52 @@ public class VideoDetails {
         this.description = description;
     }
 
-    public String getFileId() {
-        return fileId;
+    public String getVideoFileId() {
+        return videoFileId;
     }
 
-    public void setFileId(String fileId) {
-        this.fileId = fileId;
+    public void setVideoFileId(String videoFileId) {
+        this.videoFileId = videoFileId;
     }
 
-    public String getMimeType() {
-        return mimeType;
+    public String getPosterFileId() {
+        return posterFileId;
     }
 
-    public void setMimeType(String mimeType) {
-        this.mimeType = mimeType;
+    public void setPosterFileId(String posterFileId) {
+        this.posterFileId = posterFileId;
     }
 
-    public long getContentLength() {
-        return contentLength;
+    public String getPosterMimeType() {
+        return posterMimeType;
     }
 
-    public void setContentLength(long contentLength) {
-        this.contentLength = contentLength;
+    public long getPosterContentLength() {
+        return posterContentLength;
+    }
+
+    public void setPosterContentLength(long posterContentLength) {
+        this.posterContentLength = posterContentLength;
+    }
+
+    public void setPosterMimeType(String posterMimeType) {
+        this.posterMimeType = posterMimeType;
+    }
+
+    public String getVideoMimeType() {
+        return videoMimeType;
+    }
+
+    public void setVideoMimeType(String videoMimeType) {
+        this.videoMimeType = videoMimeType;
+    }
+
+    public long getVideoContentLength() {
+        return videoContentLength;
+    }
+
+    public void setVideoContentLength(long videoContentLength) {
+        this.videoContentLength = videoContentLength;
     }
 
     public float getRating() {
@@ -102,10 +128,13 @@ public class VideoDetails {
     public String toString() {
         return "VideoDetails{" +
                 "id=" + id +
-                ", description=" + description +
-                ", fileId='" + fileId + '\'' +
-                ", mimeType='" + mimeType + '\'' +
-                ", contentLength=" + contentLength +
+                ", description='" + description + '\'' +
+                ", videoFileId='" + videoFileId + '\'' +
+                ", videoMimeType='" + videoMimeType + '\'' +
+                ", videoContentLength=" + videoContentLength +
+                ", posterFileId='" + posterFileId + '\'' +
+                ", posterMimeType='" + posterMimeType + '\'' +
+                ", posterContentLength=" + posterContentLength +
                 ", rating=" + rating +
                 ", isCommented=" + isCommented +
                 '}';

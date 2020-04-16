@@ -16,6 +16,7 @@ public class MainController {
     @GetMapping("/")
     public String index(Model model) {
         Iterable<Video> videoList = videoService.getAllVideo();
+        model.addAttribute("postersUrl", "/api/video/poster/");
         model.addAttribute("videos", videoList);
         return "main";
     }
