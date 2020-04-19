@@ -1,6 +1,7 @@
 package application.services;
 
 import application.entities.Video;
+import application.exceptions.VideoIdException;
 import application.repositories.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +15,9 @@ import java.util.Optional;
 @Service
 public class VideoService {
 
+    @Autowired
+    private SessionService sessionService;
+
     @Value("${storage.videos.path}")
     private String videosPath;
 
@@ -26,7 +30,7 @@ public class VideoService {
     @Autowired
     private FileServiceImpl fileService;
 
-    public void saveVideo(Video video, MultipartFile videoFile, MultipartFile previewFile){
+    public void saveOrUpdateVideo(Video video, MultipartFile videoFile, MultipartFile previewFile){
         try {
             String videoId = fileService.saveFile(videosPath, videoFile.getInputStream());
             video.getVideoDetails().setVideoFileId(videoId);
@@ -57,15 +61,31 @@ public class VideoService {
         return videoRepository.findAll();
     }
 
-    public Optional<Video> getById(long id){
-        return videoRepository.findById(id);
+    public Video getVideoById(long id){
+        Optional<Video> v = videoRepository.findById(id);
+        if (!v.isPresent()){
+            throw new VideoIdException("The video with ID '" + id + "' doesn't exist");
+        }
+        return v.get();
+    }
+
+    public void deleteVideoById(long id){
+        Optional<Video> v= videoRepository.findById(id);
+        if (!v.isPresent()){
+            throw new VideoIdException("Video with ID '" + id + "' doesn't exist");
+        }
+        deleteVideo(v.get());
     }
 
     public InputStream loadVideoFile(Video video){
         try {
 
             InputStream stream = fileService.loadFile(videosPath, video.getVideoDetails().getVideoFileId());
-            videoRepository.updateViews(video.getId());
+
+            if (!sessionService.isPresent(video.getId())) {
+                videoRepository.updateVideoViews(video.getId());
+                sessionService.addToViews(video.getId());
+            }
 
             return stream;
         } catch (IOException e){

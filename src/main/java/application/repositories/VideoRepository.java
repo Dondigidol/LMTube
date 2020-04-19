@@ -15,6 +15,7 @@ public interface VideoRepository extends CrudRepository<Video, Long> {
     @Transactional
     @Modifying
     @Query("Update Video Set views = views + 1 Where id = :id ")
-    void updateViews(@Param("id") long id);
+    void updateVideoViews(@Param("id") long id);
+
 
 }

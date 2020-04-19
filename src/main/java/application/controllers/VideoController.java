@@ -3,7 +3,6 @@ package application.controllers;
 
 import application.entities.Video;
 import application.entities.VideoDetails;
-import application.services.FileServiceImpl;
 import application.services.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -20,9 +19,6 @@ import java.util.Optional;
 @Controller
 @RequestMapping("/video")
 public class VideoController {
-
-    @Autowired
-    private FileServiceImpl fileService;
 
     @Autowired
     private VideoService videoService;
@@ -57,7 +53,7 @@ public class VideoController {
         video.setDate(new Date());
         video.setVideoDetails(videoDetails);
 
-        videoService.saveVideo(video, videoFile, posterFile);
+        videoService.saveOrUpdateVideo(video, videoFile, posterFile);
 
         return "add-video";
     }
@@ -65,15 +61,12 @@ public class VideoController {
     @GetMapping("/view")
     public String getVideo(@RequestParam("id") long id,
                            Model model){
-        Optional<Video> v = videoService.getById(id);
-        if (v.isPresent()){
-            Video video = v.get();
-            model.addAttribute("videoSource", "/api/video/"+video.getId());
-            model.addAttribute("posterSource", "/api/video/poster/"+video.getId());
-            model.addAttribute("videoMimeType", video.getVideoDetails().getVideoMimeType());
-            model.addAttribute("title", video.getTitle());
-            model.addAttribute("description", video.getVideoDetails().getDescription());
-        }
+        Video video = videoService.getVideoById(id);
+        model.addAttribute("videoSource", "/api/video/stream/"+video.getId());
+        model.addAttribute("posterSource", "/api/video/poster/"+video.getId());
+        model.addAttribute("videoMimeType", video.getVideoDetails().getVideoMimeType());
+        model.addAttribute("title", video.getTitle());
+        model.addAttribute("description", video.getVideoDetails().getDescription());
         return "video";
     }
 
