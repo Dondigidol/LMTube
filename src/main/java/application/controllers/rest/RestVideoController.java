@@ -1,6 +1,7 @@
 package application.controllers.rest;
 
 import application.entities.Video;
+import application.services.FFmpeg.Resolution;
 import application.services.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -9,6 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -44,6 +48,13 @@ public class RestVideoController {
         videoService.deleteVideoById(id);
         return new ResponseEntity<String>("Video with ID '" + id + "' was deleted", HttpStatus.OK);
     }
+
+    @GetMapping("/resolutions")
+    public ResponseEntity<List<Resolution>> getSupportedResolutions(){
+        List<Resolution> resolutions= videoService.getStreamVideoResolutions();
+        return new ResponseEntity<>(resolutions, HttpStatus.OK);
+    }
+
 
 
 }

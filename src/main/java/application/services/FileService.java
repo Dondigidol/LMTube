@@ -16,5 +16,5 @@ public interface FileService {
 
     InputStream loadFile(String path, String name) throws IOException;
 
-    boolean deleteFile(String path, String name);
+    void deleteFile(String path, String name) throws IOException;
 }

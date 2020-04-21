@@ -3,6 +3,7 @@ package application.services;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
@@ -35,8 +36,8 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public boolean deleteFile(String path, String name) {
-        File file = new File(path + name);
-        return file.delete();
+    public void deleteFile(String path, String filename) throws IOException{
+        Path filePath = Paths.get(path + filename);
+        if (Files.exists(filePath)) Files.delete(filePath);
     }
 }

@@ -43,11 +43,6 @@
             <version>1.0.0.M6</version>
         </dependency>
         <dependency>
-            <groupId>com.github.paulcwarren</groupId>
-            <artifactId>content-fs-spring-boot-starter</artifactId>
-            <version>1.0.0.M6</version>
-        </dependency>
-        <dependency>
             <groupId>net.bramp.ffmpeg</groupId>
             <artifactId>ffmpeg</artifactId>
             <version>0.6.2</version>
