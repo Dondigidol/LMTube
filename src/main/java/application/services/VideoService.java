@@ -7,6 +7,7 @@ import application.services.FFmpeg.FFmpegService;
 import application.services.FFmpeg.Resolution;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,7 +33,7 @@ public class VideoService {
     private VideoRepository videoRepository;
 
     @Autowired
-    private FileServiceImpl fileService;
+    private FileService fileService;
 
     public void saveOrUpdateVideo(Video video, MultipartFile videoFile, MultipartFile previewFile){
         try {
@@ -104,26 +105,26 @@ public class VideoService {
         deleteVideo(v.get());
     }
 
-    public InputStream loadVideoFile(Video video, int resolution){
+    public Resource loadVideoFile(Video video, int resolution){
         try{
-            InputStream stream = fileService.loadFile(videosPath + resolution +"p/", video.getVideoDetails().getVideoFileId());
+            Resource resource = fileService.loadFile(videosPath + resolution +"p/", video.getVideoDetails().getVideoFileId());
 
             if (!sessionService.isPresent(video.getId())) {
                 videoRepository.updateVideoViews(video.getId());
                 sessionService.addToViews(video.getId());
             }
 
-            return stream;
+            return resource;
         } catch (IOException e){
             e.printStackTrace();
         }
         return null;
     }
 
-    public InputStream loadPosterFile(String posterFileId){
+    public Resource loadPosterFile(String posterFileId){
         try {
-            InputStream stream = fileService.loadFile(postersPath, posterFileId);
-            return stream;
+            Resource resource = fileService.loadFile(postersPath, posterFileId);
+            return resource;
         } catch (IOException e){
             e.printStackTrace();
         }
@@ -154,6 +155,17 @@ public class VideoService {
             propertyFile.close();
             return resolutions;
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    // загрузка видео на сервер, во временную папку
+    public String uploadVideoFile(MultipartFile videoFile){
+        try {
+            return fileService.saveFile(videosTempPath, videoFile.getInputStream());
+        } catch (IOException e){
             e.printStackTrace();
         }
         return null;

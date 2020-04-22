@@ -1,20 +1,46 @@
 package application.services;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.stereotype.Service;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
-public interface FileService {
+@Service
+public class FileService {
 
-    default String createUniqueFileName(){
-        return UUID.randomUUID().toString();
+    public String saveFile(String path, InputStream stream) throws IOException {
+        String fileName = createUniqueFileName();
+        String remotePath = path + fileName;
+
+        InputStream is = new BufferedInputStream(stream);
+        FileOutputStream fileOutputStream = new FileOutputStream(remotePath);
+
+        byte[] buffer = new byte[1024];
+        int lengthRead;
+        while ((lengthRead = is.read(buffer)) >0){
+            fileOutputStream.write(buffer, 0, lengthRead);
+            fileOutputStream.flush();
+        }
+        return fileName;
     }
 
-    String saveFile(String path, InputStream is) throws IOException;
+    public Resource loadFile(String path, String name) throws IOException{
+        Path remotePath = Paths.get(path + "\\" + name);
+        Resource resource = new UrlResource(remotePath.toUri());
+        return resource;
+    }
 
-    InputStream loadFile(String path, String name) throws IOException;
+    public void deleteFile(String path, String filename) throws IOException{
+        Path filePath = Paths.get(path + filename);
+        if (Files.exists(filePath)) Files.delete(filePath);
+    }
 
-    void deleteFile(String path, String name) throws IOException;
+    private String createUniqueFileName(){
+        return UUID.randomUUID().toString();
+    }
 }

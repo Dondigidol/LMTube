@@ -5,10 +5,12 @@ import application.services.FFmpeg.Resolution;
 import application.services.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 
@@ -24,7 +26,7 @@ public class RestVideoController {
                                              @PathVariable("resolution") int resolution){
 
         Video video= videoService.getVideoById(id);
-        InputStreamResource resource = new InputStreamResource(videoService.loadVideoFile(video, resolution));
+        Resource resource = videoService.loadVideoFile(video, resolution);
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", video.getVideoDetails().getVideoMimeType());
         return new ResponseEntity<Object>(resource, headers, HttpStatus.OK);
@@ -47,7 +49,7 @@ public class RestVideoController {
     @GetMapping(value = "/poster/{id}")
     public ResponseEntity<?> loadPosterFileById(@PathVariable("id") long id){
         Video video = videoService.getVideoById(id);
-        InputStreamResource resource = new InputStreamResource(videoService.loadPosterFile(video.getVideoDetails().getPosterFileId()));
+        Resource resource = videoService.loadPosterFile(video.getVideoDetails().getPosterFileId());
         HttpHeaders headers = new HttpHeaders();
         headers.setContentLength(video.getVideoDetails().getPosterContentLength());
         headers.set("Content-Type", video.getVideoDetails().getPosterMimeType());
@@ -65,6 +67,13 @@ public class RestVideoController {
         List<Resolution> resolutions= videoService.getStreamVideoResolutions();
         return new ResponseEntity<>(resolutions, HttpStatus.OK);
     }
+
+    @PostMapping("/upload")
+    public String uploadVideo(@RequestParam("videoFile") MultipartFile videoFile){
+        return videoService.uploadVideoFile(videoFile);
+    }
+
+
 
 
 
