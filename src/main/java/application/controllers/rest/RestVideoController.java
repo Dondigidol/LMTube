@@ -10,10 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/video")
@@ -22,16 +19,30 @@ public class RestVideoController {
     @Autowired
     private VideoService videoService;
 
-    @GetMapping(value = "/stream/{id}")
-    public ResponseEntity<?> loadVideoFileById(@PathVariable("id") long id){
+    @GetMapping(value = "/stream/{resolution}/{id}")
+    public ResponseEntity<?> loadVideoStream(@PathVariable("id") long id,
+                                             @PathVariable("resolution") int resolution){
+
         Video video= videoService.getVideoById(id);
-        InputStreamResource resource = new InputStreamResource(videoService.loadVideoFile(video));
+        InputStreamResource resource = new InputStreamResource(videoService.loadVideoFile(video, resolution));
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentLength(video.getVideoDetails().getVideoContentLength());
         headers.set("Content-Type", video.getVideoDetails().getVideoMimeType());
         return new ResponseEntity<Object>(resource, headers, HttpStatus.OK);
-
     }
+
+    @GetMapping("/streams/{id}")
+    public ResponseEntity<Map<String, String>> loadStreamsPaths(@PathVariable ("id") long id){
+
+        Map<String, String> resources = new HashMap<>();
+        Video video = videoService.getVideoById(id);
+        List<Integer> resolutions = video.getVideoDetails().getSupportedResolutions();
+        for (Integer resolution : resolutions) {
+            String url = "/api/video/stream/" + resolution + "/" + video.getId();
+            resources.put(resolution.toString(), url);
+        }
+        return new ResponseEntity<>(resources, HttpStatus.OK);
+    }
+
 
     @GetMapping(value = "/poster/{id}")
     public ResponseEntity<?> loadPosterFileById(@PathVariable("id") long id){
@@ -54,6 +65,8 @@ public class RestVideoController {
         List<Resolution> resolutions= videoService.getStreamVideoResolutions();
         return new ResponseEntity<>(resolutions, HttpStatus.OK);
     }
+
+
 
 
 

@@ -5,8 +5,6 @@ import application.exceptions.VideoIdException;
 import application.repositories.VideoRepository;
 import application.services.FFmpeg.FFmpegService;
 import application.services.FFmpeg.Resolution;
-import net.bramp.ffmpeg.FFprobe;
-import net.bramp.ffmpeg.probe.FFmpegProbeResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -14,7 +12,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,23 +47,20 @@ public class VideoService {
             video.getVideoDetails().setPosterMimeType(previewFile.getContentType());
             video.getVideoDetails().setPosterContentLength(previewFile.getSize());
 
-            Thread thread = new Thread();
-
-            thread.start();
-            thread.run();
-
             FFmpegService ffmpegService = new FFmpegService();
             Resolution resolution = ffmpegService.checkVideoResolution(videosTempPath, videoFileId);
             List<Resolution> resolutions = getStreamVideoResolutions();
+            List<Integer> supportedResolutions = video.getVideoDetails().getSupportedResolutions();
+
+
+
             for (Resolution resolution1 : resolutions) {
-                if (resolution.getHeight() >= resolution1.getHeight()){
+                if (resolution.getHeight() >= resolution1.getHeight() && supportedResolutions.contains(resolution1.getHeight())){
                     ffmpegService.convert(resolution1.getWidth(), resolution1.getHeight(), videoFileId);
                 }
             }
 
             //fileService.deleteFile(videosTempPath, videoFileId);
-
-
             videoRepository.save(video);
         } catch (IOException e) {
             e.printStackTrace();
@@ -110,10 +104,9 @@ public class VideoService {
         deleteVideo(v.get());
     }
 
-    public InputStream loadVideoFile(Video video){
-        try {
-
-            InputStream stream = fileService.loadFile(videosPath, video.getVideoDetails().getVideoFileId());
+    public InputStream loadVideoFile(Video video, int resolution){
+        try{
+            InputStream stream = fileService.loadFile(videosPath + resolution +"p/", video.getVideoDetails().getVideoFileId());
 
             if (!sessionService.isPresent(video.getId())) {
                 videoRepository.updateVideoViews(video.getId());

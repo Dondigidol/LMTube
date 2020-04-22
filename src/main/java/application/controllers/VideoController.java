@@ -4,6 +4,7 @@ package application.controllers;
 import application.entities.Video;
 import application.entities.VideoDetails;
 import application.services.VideoService;
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,8 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
 
 @Controller
 @RequestMapping("/video")
@@ -33,6 +33,7 @@ public class VideoController {
                             @RequestParam("posterFile") MultipartFile posterFile,
                             @RequestParam("title") String title,
                             @RequestParam("description") String description,
+                            @RequestParam("resolutions") ArrayList<Integer> resolutions,
                             @RequestParam(value = "isCommented", required = false) boolean isCommented,
                             @RequestParam(value = "isActive", required = false) boolean isActive,
                             Model model){
@@ -45,7 +46,9 @@ public class VideoController {
 
         videoDetails.setDescription(description);
         videoDetails.setCommented(isCommented);
+        
 
+        videoDetails.setSupportedResolutions(resolutions);
         Video video = new Video();
 
         video.setTitle(title);
@@ -62,7 +65,16 @@ public class VideoController {
     public String getVideo(@RequestParam("id") long id,
                            Model model){
         Video video = videoService.getVideoById(id);
-        model.addAttribute("videoSource", "/api/video/stream/"+video.getId());
+        List<Integer> list =  video.getVideoDetails().getSupportedResolutions();
+
+        HashMap<Integer, String> videoSources = new HashMap<>();
+        List<Integer> resolutions = video.getVideoDetails().getSupportedResolutions();
+
+        for (Integer resolution : resolutions) {
+            videoSources.put(resolution, "/api/video/stream/" + resolution + "/" + video.getId());
+        }
+
+        model.addAttribute("videoSources", videoSources);
         model.addAttribute("posterSource", "/api/video/poster/"+video.getId());
         model.addAttribute("videoMimeType", video.getVideoDetails().getVideoMimeType());
         model.addAttribute("title", video.getTitle());

@@ -4,7 +4,9 @@ package application.entities;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -32,12 +34,6 @@ public class VideoDetails {
     private float rating;
     @Column(name = "is_commented")
     private boolean isCommented = false;
-    @Column(name = "480p")
-    private Boolean r480p;
-    @Column(name = "720p")
-    private Boolean r720p;
-    @Column(name = "1080p")
-    private Boolean r1080p;
     @Column(name = "supported_resolutions")
     private String supportedResolutions;
 
@@ -125,36 +121,24 @@ public class VideoDetails {
         isCommented = commented;
     }
 
-    public boolean isR480p() {
-        return r480p;
+    public List<Integer> getSupportedResolutions() {
+        String[] resolutions = this.supportedResolutions.split(",");
+        List<Integer> res = new ArrayList<>();
+        int i = 0;
+        for (String resolution : resolutions) {
+            res.add(Integer.parseInt(resolutions[i]));
+            i++;
+        }
+        return res;
     }
 
-    public void setR480p(boolean r480p) {
-        this.r480p = r480p;
-    }
-
-    public boolean isR720p() {
-        return r720p;
-    }
-
-    public void setR720p(boolean r720p) {
-        this.r720p = r720p;
-    }
-
-    public boolean isR1080p() {
-        return r1080p;
-    }
-
-    public void setR1080p(boolean r1080p) {
-        this.r1080p = r1080p;
-    }
-
-    public String getSupportedResolutions() {
-        return this.supportedResolutions;
-    }
-
-    public void setSupportedResolutions(String supportedResolutions) {
-        this.supportedResolutions = supportedResolutions;
+    public void setSupportedResolutions(List<Integer> supportedResolutions) {
+        String resolutions="";
+        for (int i = 0; i < supportedResolutions.size(); i++) {
+            resolutions += supportedResolutions.get(i);
+            if (i < supportedResolutions.size()-1) resolutions += ",";
+        }
+        this.supportedResolutions = resolutions;
     }
 
     @Override
@@ -170,9 +154,6 @@ public class VideoDetails {
                 ", posterContentLength=" + posterContentLength +
                 ", rating=" + rating +
                 ", isCommented=" + isCommented +
-                ", r480p=" + r480p +
-                ", r720p=" + r720p +
-                ", r1080p=" + r1080p +
                 ", supportedResolutions=" + supportedResolutions +
                 '}';
     }

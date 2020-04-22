@@ -21,7 +21,7 @@
                 $.each(data, function(key, value){
                     var width = value["width"];
                     var height = value["height"];
-                    var str ="<input type='checkbox' name='" + height +"' value='" + height + "' checked>" + width + " x " + height + "<br>";
+                    var str ="<input type='checkbox' name='resolutions' value='" + height + "' checked>" + width + " x " + height + "<br>";
                     $("#resolutions").append(str);
                 });
             });
