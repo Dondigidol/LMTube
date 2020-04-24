@@ -1,11 +1,13 @@
 package application.controllers.rest;
 
+import application.entities.Poster;
 import application.entities.Video;
-import application.services.FFmpeg.Resolution;
+import application.entities.VideoDetails;
+import application.services.PosterService;
+import application.services.VideoDetailsService;
 import application.services.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,62 +23,49 @@ public class RestVideoController {
     @Autowired
     private VideoService videoService;
 
-    @GetMapping(value = "/stream/{resolution}/{id}")
-    public ResponseEntity<?> loadVideoStream(@PathVariable("id") long id,
-                                             @PathVariable("resolution") int resolution){
+    @Autowired
+    private PosterService posterService;
 
-        Video video= videoService.getVideoById(id);
-        Resource resource = videoService.loadVideoFile(video, resolution);
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Content-Type", video.getVideoDetails().getVideoMimeType());
-        return new ResponseEntity<Object>(resource, headers, HttpStatus.OK);
-    }
-
-    @GetMapping("/streams/{id}")
-    public ResponseEntity<Map<String, String>> loadStreamsPaths(@PathVariable ("id") long id){
-
-        Map<String, String> resources = new HashMap<>();
-        Video video = videoService.getVideoById(id);
-        List<Integer> resolutions = video.getVideoDetails().getSupportedResolutions();
-        for (Integer resolution : resolutions) {
-            String url = "/api/video/stream/" + resolution + "/" + video.getId();
-            resources.put(resolution.toString(), url);
-        }
-        return new ResponseEntity<>(resources, HttpStatus.OK);
-    }
-
-
-    @GetMapping(value = "/poster/{id}")
-    public ResponseEntity<?> loadPosterFileById(@PathVariable("id") long id){
-        Video video = videoService.getVideoById(id);
-        Resource resource = videoService.loadPosterFile(video.getVideoDetails().getPosterFileId());
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentLength(video.getVideoDetails().getPosterContentLength());
-        headers.set("Content-Type", video.getVideoDetails().getPosterMimeType());
-        return new ResponseEntity<Object>(resource, headers, HttpStatus.OK);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteVideoById(@PathVariable long id){
-        videoService.deleteVideoById(id);
-        return new ResponseEntity<String>("Video with ID '" + id + "' was deleted", HttpStatus.OK);
-    }
-
-    @GetMapping("/resolutions")
-    public ResponseEntity<List<Resolution>> getSupportedResolutions(){
-        List<Resolution> resolutions= videoService.getStreamVideoResolutions();
-        return new ResponseEntity<>(resolutions, HttpStatus.OK);
-    }
+    @Autowired
+    private VideoDetailsService videoDetailsService;
 
     @PostMapping("/upload")
-    public String uploadVideo(@RequestParam("videoFile") MultipartFile videoFile){
-        return videoService.uploadVideoFile(videoFile);
+    public ResponseEntity<VideoDetails> uploadVideo(@RequestParam("title") String title,
+                                         @RequestParam("description") String description,
+                                         @RequestParam("videoFile") MultipartFile videoFile,
+                                         @RequestParam("posterFile") MultipartFile posterFile){
+
+
+        List<Video> videos = videoService.upload(videoFile);
+        Poster poster = posterService.upload(posterFile);
+
+        VideoDetails videoDetails = new VideoDetails();
+        videoDetails.setTitle(title);
+        videoDetails.setDescription(description);
+        videoDetails.setVideos(videos);
+        videoDetails.setPoster(poster);
+        videoDetailsService.save(videoDetails);
+        return new ResponseEntity<>(videoDetails, HttpStatus.OK);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<VideoDetails> getVideo(@PathVariable("id") long id){
+        return new ResponseEntity<>(videoDetailsService.getById(id), HttpStatus.OK);
+    }
 
+    @GetMapping("/stream/{id}")
+    public ResponseEntity<?> getVideoStream(@PathVariable("id") String videoFileName,
+                                            @RequestParam("res") int resolution){
+        InputStreamResource resource = videoService.load(videoFileName, resolution);
+        Video video = videoService.getVideoInfo(videoFileName, resolution);
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", video.getMimeType());
+        headers.set("Content-length", String.valueOf(video.getContentLength()));
 
+        return new ResponseEntity<InputStreamResource>(resource, headers, HttpStatus.OK);
 
+    }
 
 
 }

@@ -1,8 +1,6 @@
 package application.entities;
 
-
-import org.hibernate.annotations.Cascade;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import javax.persistence.*;
 import java.util.*;
@@ -18,13 +16,19 @@ public class VideoDetails {
     private String title;
     @Column(name = "description")
     private String description;
+    @JsonFormat(pattern = "dd.MM.yyyy")
     @Column(name = "created_at")
     private Date createdAt;
+    @Column(name = "views")
+    private long views;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "video_id")
-    @Cascade(org.hibernate.annotations.CascadeType.DELETE)
     private List<Video> videos;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "poster_id")
+    private Poster poster;
 
 
     public long getId() {
@@ -59,20 +63,33 @@ public class VideoDetails {
         this.createdAt = createdAt;
     }
 
+    public long getViews() {
+        return views;
+    }
 
+    public void setViews(long views) {
+        this.views = views;
+    }
+
+    public List<Video> getVideos() {
+        return videos;
+    }
+
+    public void setVideos(List<Video> videos) {
+        this.videos = videos;
+    }
+
+    public Poster getPoster() {
+        return poster;
+    }
+
+    public void setPoster(Poster poster) {
+        this.poster = poster;
+    }
 
     @PrePersist
-    public void creating(){
+    public void creating() {
         this.createdAt = new Date();
     }
 
-    @Override
-    public String toString() {
-        return "VideoDetails{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", createdAt=" + createdAt +
-                '}';
-    }
 }

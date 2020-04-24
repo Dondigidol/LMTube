@@ -7,6 +7,7 @@ import net.bramp.ffmpeg.builder.FFmpegBuilder;
 import net.bramp.ffmpeg.nut.NutDataInputStream;
 import net.bramp.ffmpeg.probe.FFmpegProbeResult;
 import net.bramp.ffmpeg.probe.FFmpegStream;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -15,6 +16,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public class FFmpegService{
@@ -48,21 +51,32 @@ public class FFmpegService{
         }
     }
 
-    public void convert(int width, int height, String filename) throws IOException{
+    public Map<String, Object> convert(int width, int height, String filename) throws IOException{
         Path path = Paths.get(videosPath + height + "p");
         if (!Files.exists(path)) new File(path.toString()).mkdir();
 
+        Map<String, Object> result = new HashMap<>();
+
         FFmpegProbeResult probeResult = ffprobe.probe(videosTempPath + filename);
+
+        Path resultFilePath = Paths.get(path.toString()+"\\"+filename);
 
         FFmpegBuilder builder = new FFmpegBuilder()
                 .setInput(probeResult)
                 .overrideOutputFiles(true)
-                .addOutput( path.toString() + "\\" + filename)
+                .addOutput( resultFilePath.toString())
                 .setFormat(videoFormat)
                 .setVideoResolution(width, height)
                 .done();
         FFmpegExecutor executor = new FFmpegExecutor(ffmpeg, ffprobe);
         executor.createJob(builder).run();
+
+        long length = Files.size(resultFilePath);
+
+        result.put("mimeType", "video/mp4");
+        result.put("length", length);
+
+        return result;
     }
 
     public Resolution checkVideoResolution(String path, String filename) throws IOException{

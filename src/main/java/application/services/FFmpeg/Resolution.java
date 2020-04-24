@@ -7,7 +7,7 @@ public class Resolution {
 
     public Resolution(){}
 
-    public Resolution(int width, int height){
+    public Resolution(short width, short height){
         this.width = width;
         this.height = height;
     }

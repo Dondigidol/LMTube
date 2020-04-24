@@ -22,12 +22,12 @@ public class RestPosterController {
     @Autowired
     private PosterService posterService;
 
-    @PostMapping("/upload")
+/*    @PostMapping("/upload")
     public String uploadPosterFile(@RequestParam("posterFile") MultipartFile posterFile){
-        return posterService.upload(posterFile);
-    }
+        return posterService.upload(posterFile).getName();
+    }*/
 
-    @GetMapping("/{name}")
+/*    @GetMapping("/{name}")
     public ResponseEntity<?> getPosterFile(@PathVariable("name") String posterName,
                                            HttpServletRequest request){
 
@@ -41,9 +41,9 @@ public class RestPosterController {
         headers.set("Content-Type", mimeType);
         headers.set("Content-Length", contentLength);
         return new ResponseEntity<Object>(resource, headers, HttpStatus.OK);
-    }
+    }*/
 
-    @DeleteMapping("/{name}")
+/*    @DeleteMapping("/{name}")
     public ResponseEntity<?> deletePosterFile(@PathVariable("name") String posterName){
         HashMap<String, Boolean> result = new HashMap<>();
         HttpStatus status;
@@ -55,6 +55,6 @@ public class RestPosterController {
             result.put("deleted", false);
         }
         return new ResponseEntity<>(result, status);
-    }
+    }*/
 
 }

@@ -5,130 +5,87 @@ import application.exceptions.VideoIdException;
 import application.repositories.VideoRepository;
 import application.services.FFmpeg.FFmpegService;
 import application.services.FFmpeg.Resolution;
+import net.bytebuddy.description.type.TypeDescription;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 public class VideoService {
 
     @Autowired
-    private SessionService sessionService;
-
-    @Value("${storage.videos.path}")
-    private String videosPath;
-    @Value("${storage.posters.path}")
-    private String postersPath;
-    @Value ("${storage.videos.temp.path}")
-    private String videosTempPath;
+    private FileService fileService;
 
     @Autowired
     private VideoRepository videoRepository;
 
-    @Autowired
-    private FileService fileService;
+    @Value("${storage.videos.temp.path}")
+    private String videosTempPath;
 
-    public void saveOrUpdateVideo(Video video, MultipartFile videoFile, MultipartFile previewFile){
+    @Value("${storage.videos.path}")
+    private String videosPath;
+
+    public List<Video> upload(MultipartFile videoFile){
         try {
-
-            String videoFileId = fileService.saveFile(videosTempPath, videoFile.getInputStream());
-            video.getVideoDetails().setVideoFileId(videoFileId);
-            video.getVideoDetails().setVideoMimeType(videoFile.getContentType());
-            video.getVideoDetails().setVideoContentLength(videoFile.getSize());
-
-            String posterFileId = fileService.saveFile(postersPath, previewFile.getInputStream());
-            video.getVideoDetails().setPosterFileId(posterFileId);
-            video.getVideoDetails().setPosterMimeType(previewFile.getContentType());
-            video.getVideoDetails().setPosterContentLength(previewFile.getSize());
-
-            FFmpegService ffmpegService = new FFmpegService();
-            Resolution resolution = ffmpegService.checkVideoResolution(videosTempPath, videoFileId);
+            String videoFileName = fileService.saveFile(videosTempPath, videoFile.getInputStream());
+            List<Video> videos = new ArrayList<>();
             List<Resolution> resolutions = getStreamVideoResolutions();
-            List<Integer> supportedResolutions = video.getVideoDetails().getSupportedResolutions();
+            FFmpegService fFmpegService = new FFmpegService();
 
+            Resolution resolution = fFmpegService.checkVideoResolution(videosTempPath, videoFileName);
 
-
-            for (Resolution resolution1 : resolutions) {
-                if (resolution.getHeight() >= resolution1.getHeight() && supportedResolutions.contains(resolution1.getHeight())){
-                    ffmpegService.convert(resolution1.getWidth(), resolution1.getHeight(), videoFileId);
+            for (Resolution resolution1: resolutions){
+                if (resolution.getHeight() >= resolution1.getHeight()){
+                    Map<String, Object> result = fFmpegService.convert(resolution1.getWidth(), resolution1.getHeight(), videoFileName);
+                    Video video = new Video();
+                    video.setName(videoFileName);
+                    video.setContentLength((long)result.get("length"));
+                    video.setMimeType((String)result.get("mimeType"));
+                    video.setResolution(resolution1.getHeight());
+                    videos.add(video);
                 }
             }
-
-            //fileService.deleteFile(videosTempPath, videoFileId);
-            videoRepository.save(video);
-        } catch (IOException e) {
+            return videos;
+        } catch(IOException e){
             e.printStackTrace();
         }
 
+        return null;
     }
 
-    public void deleteVideo(Video video){
-
+    public InputStreamResource load(String videoFileName, long resolution){
         try {
-            String videoFileId = video.getVideoDetails().getVideoFileId();
-            String previewFileId = video.getVideoDetails().getPosterFileId();
+            Path filePath = Paths.get(videosPath + "\\" + resolution + "p\\" + videoFileName);
+            if (!Files.exists(filePath)) throw new VideoIdException("Видео с ID '" + videoFileName + "' не существует");
 
-            fileService.deleteFile(videosPath, videoFileId);
-            fileService.deleteFile(postersPath, previewFileId);
-
-            videoRepository.delete(video);
-        } catch (IOException e){
-            e.printStackTrace();
-        }
-
-    }
-
-    public Iterable<Video> getAllVideo(){
-        return videoRepository.findAll();
-    }
-
-    public Video getVideoById(long id){
-        Optional<Video> v = videoRepository.findById(id);
-        if (!v.isPresent()){
-            throw new VideoIdException("The video with ID '" + id + "' doesn't exist");
-        }
-        return v.get();
-    }
-
-    public void deleteVideoById(long id){
-        Optional<Video> v= videoRepository.findById(id);
-        if (!v.isPresent()){
-            throw new VideoIdException("Video with ID '" + id + "' doesn't exist");
-        }
-        deleteVideo(v.get());
-    }
-
-    public Resource loadVideoFile(Video video, int resolution){
-        try{
-            Resource resource = fileService.loadFile(videosPath + resolution +"p/", video.getVideoDetails().getVideoFileId());
-
-            if (!sessionService.isPresent(video.getId())) {
-                videoRepository.updateVideoViews(video.getId());
-                sessionService.addToViews(video.getId());
-            }
-
-            return resource;
+            InputStreamResource isr = new InputStreamResource(new FileInputStream(filePath.toFile()));
+            return isr;
         } catch (IOException e){
             e.printStackTrace();
         }
         return null;
     }
 
-    public Resource loadPosterFile(String posterFileId){
-        try {
-            Resource resource = fileService.loadFile(postersPath, posterFileId);
-            return resource;
-        } catch (IOException e){
-            e.printStackTrace();
-        }
-        return null;
+    public Video getVideoInfo(String videoName, int resolution){
+        Optional<Video> v = videoRepository.findByNameAndResolution(videoName, resolution);
+        if (v.isPresent()){
+            return v.get();
+        } else throw new VideoIdException("Видеофайл с именем '" + videoName + "' и разрешением " + resolution+ "p не существует!");
+
     }
 
     public List<Resolution> getStreamVideoResolutions(){
@@ -145,7 +102,7 @@ public class VideoService {
                     String width = resolution[0].trim().replaceAll("[^\\d]", "");
                     String height = resolution[1].trim().replaceAll("[^\\d]", "");
                     if (width.length() > 0 && height.length() >0){
-                        Resolution res = new Resolution(Integer.parseInt(width), Integer.parseInt(height));
+                        Resolution res = new Resolution(Short.parseShort(width), Short.parseShort(height));
                         resolutions.add(res);
                     }
                 }
@@ -161,15 +118,8 @@ public class VideoService {
     }
 
 
-    // загрузка видео на сервер, во временную папку
-    public String uploadVideoFile(MultipartFile videoFile){
-        try {
-            return fileService.saveFile(videosTempPath, videoFile.getInputStream());
-        } catch (IOException e){
-            e.printStackTrace();
-        }
-        return null;
-    }
+
+
 
 
 
