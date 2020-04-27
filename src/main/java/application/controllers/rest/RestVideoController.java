@@ -18,6 +18,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/video")
+@CrossOrigin
 public class RestVideoController {
 
     @Autowired
@@ -30,22 +31,21 @@ public class RestVideoController {
     private VideoDetailsService videoDetailsService;
 
     @PostMapping("/upload")
-    public ResponseEntity<VideoDetails> uploadVideo(@RequestParam("title") String title,
-                                         @RequestParam("description") String description,
-                                         @RequestParam("videoFile") MultipartFile videoFile,
-                                         @RequestParam("posterFile") MultipartFile posterFile){
-
-
-        List<Video> videos = videoService.upload(videoFile);
-        Poster poster = posterService.upload(posterFile);
-
-        VideoDetails videoDetails = new VideoDetails();
-        videoDetails.setTitle(title);
-        videoDetails.setDescription(description);
-        videoDetails.setVideos(videos);
-        videoDetails.setPoster(poster);
+    public ResponseEntity<VideoDetails> uploadVideo(@RequestBody VideoDetails videoDetails){
         videoDetailsService.save(videoDetails);
         return new ResponseEntity<>(videoDetails, HttpStatus.OK);
+    }
+
+    @PostMapping("/upload-video")
+    public ResponseEntity<List<Video>> uploadVideoFile(@RequestParam("videoFile") MultipartFile videoFile){
+        List<Video> videos = videoService.upload(videoFile);
+        return new ResponseEntity<>(videos, HttpStatus.OK);
+    }
+
+    @PostMapping("/upload-poster")
+    public ResponseEntity<Poster> uploadPosterFile(@RequestParam("posterFile") MultipartFile posterFile){
+        Poster poster = posterService.upload(posterFile);
+        return new ResponseEntity<>(poster, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")

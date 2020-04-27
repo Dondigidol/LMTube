@@ -87,6 +87,18 @@ public class VideoDetails {
         this.poster = poster;
     }
 
+
+
+    public Video getVideo(int resolution){
+        List<Video> videos = this.getVideos();
+        for (Video video : videos) {
+            if (video.getResolution() == resolution){
+                return video;
+            }
+        }
+        return null;
+    }
+
     @PrePersist
     public void creating() {
         this.createdAt = new Date();
