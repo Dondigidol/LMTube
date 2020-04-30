@@ -8,6 +8,7 @@ import application.repositories.VideoDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -27,5 +28,9 @@ public class VideoDetailsService {
         } else
             throw new VideoIdException("Видео с ID '" + id + "' не найдено!");
 
+    }
+
+    public List<VideoDetails> searchByTitle(String title){
+        return videoDetailsRepository.searchByTitle(title);
     }
 }

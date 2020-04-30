@@ -5,5 +5,5 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface PosterRepository extends CrudRepository<Poster, String> {
+public interface PosterRepository extends CrudRepository<Poster, Long> {
 }

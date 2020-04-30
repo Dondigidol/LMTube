@@ -30,6 +30,12 @@ public class RestVideoController {
     @Autowired
     private VideoDetailsService videoDetailsService;
 
+    @GetMapping("/search")
+    public ResponseEntity<List<VideoDetails>> getVideos(@RequestParam("title") String title){
+        List<VideoDetails> videos = videoDetailsService.searchByTitle(title);
+        return new ResponseEntity<>(videos, HttpStatus.OK);
+    }
+
     @PostMapping("/upload")
     public ResponseEntity<VideoDetails> uploadVideo(@RequestBody VideoDetails videoDetails){
         videoDetailsService.save(videoDetails);
@@ -40,12 +46,6 @@ public class RestVideoController {
     public ResponseEntity<List<Video>> uploadVideoFile(@RequestParam("videoFile") MultipartFile videoFile){
         List<Video> videos = videoService.upload(videoFile);
         return new ResponseEntity<>(videos, HttpStatus.OK);
-    }
-
-    @PostMapping("/upload-poster")
-    public ResponseEntity<Poster> uploadPosterFile(@RequestParam("posterFile") MultipartFile posterFile){
-        Poster poster = posterService.upload(posterFile);
-        return new ResponseEntity<>(poster, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")

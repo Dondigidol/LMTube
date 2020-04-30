@@ -1,6 +1,7 @@
 package application.controllers.rest;
 
 
+import application.entities.Poster;
 import application.services.PosterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -16,32 +17,31 @@ import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/poster")
+@CrossOrigin
 public class RestPosterController {
 
 
     @Autowired
     private PosterService posterService;
 
-/*    @PostMapping("/upload")
-    public String uploadPosterFile(@RequestParam("posterFile") MultipartFile posterFile){
-        return posterService.upload(posterFile).getName();
-    }*/
+    @PostMapping("/upload-poster")
+    public ResponseEntity<Poster> uploadPosterFile(@RequestParam("posterFile") MultipartFile posterFile){
+        Poster poster = posterService.upload(posterFile);
+        return new ResponseEntity<>(poster, HttpStatus.OK);
+    }
 
-/*    @GetMapping("/{name}")
-    public ResponseEntity<?> getPosterFile(@PathVariable("name") String posterName,
-                                           HttpServletRequest request){
 
-        HashMap<String, Object> poster = posterService.load(posterName);
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getPosterFile(@PathVariable("id") long posterId){
 
-        Resource resource = (Resource) poster.get("resource");
-        String contentLength = (String) poster.get("contentLength");
-        String mimeType = (String) poster.get("mimeType");
+        Resource posterFile = posterService.load(posterId);
+        Poster poster = posterService.getPoster(posterId);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Content-Type", mimeType);
-        headers.set("Content-Length", contentLength);
-        return new ResponseEntity<Object>(resource, headers, HttpStatus.OK);
-    }*/
+        headers.set("Content-Type", poster.getMimeType());
+        headers.set("Content-Length", String.valueOf(poster.getContentLength()));
+        return new ResponseEntity<Object>(posterFile, headers, HttpStatus.OK);
+    }
 
 /*    @DeleteMapping("/{name}")
     public ResponseEntity<?> deletePosterFile(@PathVariable("name") String posterName){
