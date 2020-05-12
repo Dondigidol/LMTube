@@ -1,7 +1,9 @@
 package application.services;
 
 import application.entities.Video;
+import application.entities.VideoDetails;
 import application.exceptions.VideoIdException;
+import application.repositories.VideoDetailsRepository;
 import application.repositories.VideoRepository;
 import application.services.FFmpeg.FFmpegService;
 import application.services.FFmpeg.Resolution;
@@ -32,6 +34,12 @@ public class VideoService {
 
     @Autowired
     private VideoRepository videoRepository;
+
+    @Autowired
+    private VideoDetailsRepository videoDetailsRepository;
+
+    @Autowired
+    private SessionService sessionService;
 
     @Value("${storage.videos.temp.path}")
     private String videosTempPath;
@@ -67,12 +75,23 @@ public class VideoService {
         return null;
     }
 
-    public InputStreamResource load(String videoFileName, long resolution){
+    public InputStreamResource load(String videoFileName, int resolution){
         try {
             Path filePath = Paths.get(videosPath + "\\" + resolution + "p\\" + videoFileName);
             if (!Files.exists(filePath)) throw new VideoIdException("Видео с ID '" + videoFileName + "' не существует");
 
             InputStreamResource isr = new InputStreamResource(new FileInputStream(filePath.toFile()));
+
+            Optional<VideoDetails> vd = videoDetailsRepository.findByFileNameAndResolution(videoFileName, resolution);
+            if (vd.isPresent()){
+                VideoDetails video = vd.get();
+                if (!sessionService.isPresent(video.getId())) {
+                    videoDetailsRepository.updateVideoViews(video.getId());
+                    sessionService.addToViews(video.getId());
+                }
+            }
+
+
             return isr;
         } catch (IOException e){
             e.printStackTrace();
@@ -116,6 +135,8 @@ public class VideoService {
         }
         return null;
     }
+
+
 
 
 

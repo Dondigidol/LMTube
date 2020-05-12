@@ -14,6 +14,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface VideoDetailsRepository extends CrudRepository<VideoDetails, Long> {
@@ -33,6 +34,10 @@ public interface VideoDetailsRepository extends CrudRepository<VideoDetails, Lon
         return findTop20ByIdNotOrderByCreatedAtDesc(id);    }
 
     List<VideoDetails> findTop20ByIdNotOrderByCreatedAtDesc(long id);
+
+    @Query("SELECT vd FROM VideoDetails vd JOIN FETCH vd.videos v WHERE v.name=:name and v.resolution=:resolution")
+    Optional<VideoDetails> findByFileNameAndResolution(@Param("name") String filename,
+                                                       @Param("resolution") int resolution);
 
 
 

@@ -26,7 +26,6 @@ public class SessionService {
 
     public boolean isPresent(long videoId){
         if (viewsList.contains(videoId)) return true;
-
         return false;
     }
 
