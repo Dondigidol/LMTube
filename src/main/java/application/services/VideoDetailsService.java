@@ -21,6 +21,10 @@ public class VideoDetailsService {
         videoDetailsRepository.save(videoDetails);
     }
 
+    public List<VideoDetails> getVideosDetails(){
+        return videoDetailsRepository.findAll();
+    }
+
     public VideoDetails getById(long id){
         Optional<VideoDetails> vd = videoDetailsRepository.findById(id);
         if (vd.isPresent()){
@@ -32,5 +36,9 @@ public class VideoDetailsService {
 
     public List<VideoDetails> searchByTitle(String title){
         return videoDetailsRepository.searchByTitle(title);
+    }
+
+    public List<VideoDetails> getRecommendations(long id){
+        return videoDetailsRepository.findRecommendations(id);
     }
 }

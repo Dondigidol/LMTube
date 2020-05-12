@@ -30,8 +30,14 @@ public class RestVideoController {
     @Autowired
     private VideoDetailsService videoDetailsService;
 
+    @GetMapping
+    public ResponseEntity<List<VideoDetails>> getVideos(){
+        List<VideoDetails> videos = videoDetailsService.getVideosDetails();
+        return new ResponseEntity<>(videos, HttpStatus.OK);
+    }
+
     @GetMapping("/search")
-    public ResponseEntity<List<VideoDetails>> getVideos(@RequestParam("title") String title){
+    public ResponseEntity<List<VideoDetails>> searchVideos(@RequestParam("title") String title){
         List<VideoDetails> videos = videoDetailsService.searchByTitle(title);
         return new ResponseEntity<>(videos, HttpStatus.OK);
     }
@@ -64,7 +70,13 @@ public class RestVideoController {
         headers.set("Content-length", String.valueOf(video.getContentLength()));
 
         return new ResponseEntity<InputStreamResource>(resource, headers, HttpStatus.OK);
+    }
 
+    @GetMapping("/recommendations/{id}")
+    public ResponseEntity<List<VideoDetails>> getRecommendations(@PathVariable("id") long id){
+        List<VideoDetails> recommendedVideos = videoDetailsService.getRecommendations(id);
+
+        return new ResponseEntity<>(recommendedVideos, HttpStatus.OK);
     }
 
 
