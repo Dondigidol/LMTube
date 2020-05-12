@@ -1,4 +1,4 @@
-package application.controllers.rest;
+package application.controllers;
 
 import application.entities.Poster;
 import application.entities.Video;
