@@ -18,18 +18,6 @@ import java.util.Collections;
 
 public class JWTLoginFilter extends AbstractAuthenticationProcessingFilter {
 
-    public JWTLoginFilter() {
-        super("/api/**");
-        setAuthenticationSuccessHandler((request, response, authentication) ->
-        {
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            request.getRequestDispatcher(request.getServletPath() + request.getPathInfo()).forward(request, response);
-        });
-        setAuthenticationFailureHandler((request, response, authenticationException) -> {
-            response.getOutputStream().print(authenticationException.getMessage());
-        });
-    }
-
     public JWTLoginFilter(String url, AuthenticationManager authManager){
         super(new AntPathRequestMatcher(url));
         setAuthenticationManager(authManager);
