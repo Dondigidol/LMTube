@@ -16,11 +16,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private LdapAuthenticationProvider ldapAuthenticationProvider;
 
+    @Autowired
+    private JwtAuthenticationEntryPoint unauthorizedHandler;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         //http.cors()
         http
                 .csrf().disable()
+                .exceptionHandling().authenticationEntryPoint(unauthorizedHandler)
+                .and()
                 .authorizeRequests()
                     .antMatchers(HttpMethod.GET, "/api/user/login")
                         .permitAll()
