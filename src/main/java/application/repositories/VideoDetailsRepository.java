@@ -41,7 +41,4 @@ public interface VideoDetailsRepository extends CrudRepository<VideoDetails, Lon
 
 
 
-
-
-
 }
