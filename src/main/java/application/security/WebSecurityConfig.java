@@ -27,7 +27,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler)
                 .and()
                 .authorizeRequests()
-                    .antMatchers(HttpMethod.GET, "/api/user/login")
+                    .antMatchers(HttpMethod.GET, "/api/user/login", "/api/video/**", "/api/poster/**")
                         .permitAll()
                     .antMatchers(HttpMethod.POST, "/api/user/login")
                         .permitAll()
