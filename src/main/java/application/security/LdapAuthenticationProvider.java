@@ -1,12 +1,16 @@
 package application.security;
 
+import application.entities.ADUser;
 import application.entities.User;
 import application.entities.UserRole;
 import application.services.UserRoleService;
+import application.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import javax.naming.AuthenticationException;
@@ -15,6 +19,9 @@ import java.util.Collections;
 
 @Component
 public class LdapAuthenticationProvider implements AuthenticationProvider {
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private UserRoleService userRoleService;
@@ -26,10 +33,16 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
         try {
             ADService adService = new ADService(username, password);
             adService.init();
-            User user = adService.getUser();
-            UserRole userRole = userRoleService.getUserRole(user.getUsername());
+            ADUser adUser = adService.getUser();
+            UserRole userRole = userRoleService.getUserRole(adUser.getUsername());
             if (userRole != null){
-                return new UsernamePasswordAuthenticationToken(user, password, Collections.emptyList());
+                User user = new User();
+                user.setUsername(adUser.getUsername());
+                user.setPassword(password);
+                user.setPosition(adUser.getPosition());
+                user.setFullName(adUser.getFullName());
+                user.setRole(userRole.getRole());
+                return new UsernamePasswordAuthenticationToken(userService.saveUser(user), password, Collections.emptyList());
             }
         } catch (NamingException e){
             System.out.println(username + " - invalid username or password");
@@ -40,6 +53,11 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
     @Override
     public boolean supports(Class<?> auth){
         return auth.equals(UsernamePasswordAuthenticationToken.class);
+    }
+
+    @Bean
+    BCryptPasswordEncoder bCryptPasswordEncoder(){
+        return new BCryptPasswordEncoder();
     }
 
 

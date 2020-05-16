@@ -1,5 +1,6 @@
 package application.security;
 
+import application.entities.ADUser;
 import application.entities.User;
 
 import javax.naming.Context;
@@ -42,7 +43,7 @@ public class ADService {
         ldapContext = new InitialDirContext(ldapEnv);
     }
 
-    public User getUser() throws NamingException{
+    public ADUser getUser() throws NamingException{
 
         SearchControls searchControls = new SearchControls();
         String[] returnedAttrs = {"sAMAccountName","givenName","sn","title"};
@@ -54,7 +55,7 @@ public class ADService {
         NamingEnumeration<SearchResult> answer = ldapContext.search(searchBase, searchFilter, searchControls);
 
         if (answer.hasMoreElements()){
-            User user = new User();
+            ADUser user = new ADUser();
             SearchResult sr = answer.next();
             user.setUsername(sr.getAttributes().get("sAMAccountName").get(0).toString());
             user.setFullName("sdasdasdasdas");//user.setFullName(sr.getAttributes().get("displayName").get(0).toString());

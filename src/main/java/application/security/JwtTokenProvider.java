@@ -1,8 +1,8 @@
 package application.security;
 
+import application.entities.ADUser;
 import application.entities.User;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +22,7 @@ public class JwtTokenProvider {
         Date expiryDate = new Date(now.getTime() + EXPIRATION_TIME);
 
         Map<String, Object> claims = new HashMap<>();
-        claims.put("ldap", user.getUsername());
+        claims.put("username", user.getUsername());
         claims.put("fullName", user.getFullName());
         claims.put("position", user.getPosition());
         claims.put("role", user.getRole());
@@ -35,4 +35,32 @@ public class JwtTokenProvider {
                 .signWith(SignatureAlgorithm.HS512, SECRET)
                 .compact();
     }
+
+    public boolean validateToken(String token){
+        try{
+            Jwts.parser().setSigningKey(SECRET).parseClaimsJws(token);
+            return true;
+        } catch (SignatureException e){
+            System.out.println("Invalid JWT Signature");
+        } catch (MalformedJwtException e){
+            System.out.println("Invalid JWT Token");
+        } catch (ExpiredJwtException e){
+            System.out.println("Expired JWT token");
+        } catch (UnsupportedJwtException e){
+            System.out.println("Unsupported JWT token");
+        } catch (IllegalArgumentException e){
+            System.out.println("JWT claims string is empty");
+        }
+
+        return false;
+    }
+
+    public String getUserNameFromJWT(String token){
+        Claims claims = Jwts.parser().setSigningKey(SECRET).parseClaimsJws(token).getBody();
+        String username = (String) claims.get("username");
+
+        return username;
+    }
+
+
 }

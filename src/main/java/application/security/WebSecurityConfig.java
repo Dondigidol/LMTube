@@ -18,6 +18,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private LdapAuthenticationProvider ldapAuthenticationProvider;
 
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter (){ return new JwtAuthenticationFilter();};
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
@@ -34,6 +37,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         .permitAll()
                     .anyRequest()
                         .authenticated();
+
+        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
 
