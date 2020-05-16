@@ -1,36 +1,70 @@
 package application.controllers;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
+import application.exceptions.InvalidLoginResponse;
+import application.payload.JWTLoginSuccessResponse;
+import application.payload.LoginRequest;
+import application.security.JwtTokenProvider;
+import application.security.LdapAuthenticationProvider;
+import application.services.MapValidationErrorService;
+import application.services.UserRoleService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
+
+import static application.security.SecurityConstants.TOKEN_PREFIX;
 
 @RestController
 @RequestMapping("/api/user")
 public class RestUserController {
 
+    @Autowired
+    private UserRoleService userRoleService;
+
+    @Autowired
+    private JwtTokenProvider tokenProvider;
+
+    @Autowired
+    private LdapAuthenticationProvider ldapAuthenticationProvider;
+
+    @Autowired
+    private MapValidationErrorService mapValidationErrorService;
+
     @PostMapping("/login")
-    public String login(@RequestParam("username") String username,
-                        @RequestParam("password") String password){
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest,
+                                              BindingResult result){
 
-        HttpHeaders headers = new HttpHeaders();
+        ResponseEntity<?> errorMap = mapValidationErrorService.validate(result);
+        if (errorMap != null){
+            return errorMap;
+        }
 
-        MultiValueMap<String, String> parametersMap = new LinkedMultiValueMap<>();
-        parametersMap.add("username", username);
-        parametersMap.add("password", password);
+        Authentication authentication = ldapAuthenticationProvider.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
-        HttpEntity<MultiValueMap<String,String>> requestEntity = new HttpEntity<>(parametersMap, headers);
+        if (authentication == null){
+            return new ResponseEntity<>(new InvalidLoginResponse(), HttpStatus.BAD_REQUEST);
+        }
 
-        RestTemplate restTemplate = new RestTemplate();
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = TOKEN_PREFIX + tokenProvider.generateToken(authentication);
+        return ResponseEntity.ok(new JWTLoginSuccessResponse(true, jwt));
 
 
+    }
 
-        return null;
+    @GetMapping("/roles")
+    public ResponseEntity<List<String>> getAvailableRoles(){
+        List<String> roles = userRoleService.getAvailableRoles();
+        return new ResponseEntity<>(roles, HttpStatus.OK);
     }
 }

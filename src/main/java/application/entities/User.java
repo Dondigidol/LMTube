@@ -2,35 +2,27 @@ package application.entities;
 
 public class User {
 
-    private int id;
-    private String ldap;
-    private String name;
-    private String surname;
+    private String username;
+    private String fullName;
     private String position;
     private String role;
 
-    public int getId() {
-        return id;
+    public User(){}
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public String getUsername(){
+        return username;
     }
 
-    public String getName() {
-        return name;
+    public String getFullName() {
+        return fullName;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getSurname() {
-        return surname;
-    }
-
-    public void setSurname(String surname) {
-        this.surname = surname;
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
     public String getPosition() {
@@ -48,14 +40,4 @@ public class User {
     public void setRole(String role) {
         this.role = role;
     }
-
-
-    public String getLdap() {
-        return ldap;
-    }
-
-    public void setLdap(String ldap) {
-        this.ldap = ldap;
-    }
-
 }

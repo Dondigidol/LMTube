@@ -1,4 +1,4 @@
-package application;
+package application.entities;
 
 public enum Role {
     CREATOR("creator"),

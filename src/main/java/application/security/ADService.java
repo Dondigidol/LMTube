@@ -1,10 +1,6 @@
 package application.security;
 
-import application.Role;
 import application.entities.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
@@ -60,11 +56,9 @@ public class ADService {
         if (answer.hasMoreElements()){
             User user = new User();
             SearchResult sr = answer.next();
-            user.setLdap(sr.getAttributes().get("sAMAccountName").get(0).toString());
-            user.setName(sr.getAttributes().get("givenName").get(0).toString());
-            user.setSurname(sr.getAttributes().get("sn").get(0).toString());
+            user.setUsername(sr.getAttributes().get("sAMAccountName").get(0).toString());
+            user.setFullName("sdasdasdasdas");//user.setFullName(sr.getAttributes().get("displayName").get(0).toString());
             user.setPosition(sr.getAttributes().get("title").get(0).toString());
-            user.setRole(Role.CREATOR.getValue());
             return user;
         }
         return null;

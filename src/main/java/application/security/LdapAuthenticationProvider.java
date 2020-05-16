@@ -1,16 +1,23 @@
 package application.security;
 
 import application.entities.User;
+import application.entities.UserRole;
+import application.services.UserRoleService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+import javax.naming.AuthenticationException;
 import javax.naming.NamingException;
 import java.util.Collections;
 
 @Component
 public class LdapAuthenticationProvider implements AuthenticationProvider {
+
+    @Autowired
+    private UserRoleService userRoleService;
 
     @Override
     public Authentication authenticate(Authentication auth){
@@ -20,9 +27,12 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
             ADService adService = new ADService(username, password);
             adService.init();
             User user = adService.getUser();
-            return new UsernamePasswordAuthenticationToken(user, password, Collections.emptyList());
+            UserRole userRole = userRoleService.getUserRole(user.getUsername());
+            if (userRole != null){
+                return new UsernamePasswordAuthenticationToken(user, password, Collections.emptyList());
+            }
         } catch (NamingException e){
-            e.printStackTrace();
+            System.out.println(username + " - invalid username or password");
         }
         return null;
     }
@@ -31,5 +41,7 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
     public boolean supports(Class<?> auth){
         return auth.equals(UsernamePasswordAuthenticationToken.class);
     }
+
+
 
 }

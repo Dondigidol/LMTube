@@ -1,13 +1,13 @@
-package application.exceptions;
+package application.payload;
 
-public class InvalidLoginResponse {
+import javax.validation.constraints.NotBlank;
+
+public class LoginRequest {
+
+    @NotBlank(message = "Логин не может быть пустым")
     private String username;
+    @NotBlank(message = "Пароль не можут быть пустым")
     private String password;
-
-    public InvalidLoginResponse(){
-        this.username = "Invalid username";
-        this.password = "Invalid password";
-    }
 
     public String getUsername() {
         return username;
