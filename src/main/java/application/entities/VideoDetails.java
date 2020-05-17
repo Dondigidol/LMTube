@@ -22,6 +22,10 @@ public class VideoDetails {
     @Column(name = "views")
     private long views;
 
+    @ManyToOne
+    @JoinColumn(name = "author")
+    private User author;
+
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "video_id")
     private List<Video> videos;
@@ -88,6 +92,13 @@ public class VideoDetails {
     }
 
 
+    public User getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(User author) {
+        this.author = author;
+    }
 
     public Video getVideo(int resolution){
         List<Video> videos = this.getVideos();

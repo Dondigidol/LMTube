@@ -39,6 +39,7 @@ public interface VideoDetailsRepository extends CrudRepository<VideoDetails, Lon
     Optional<VideoDetails> findByFileNameAndResolution(@Param("name") String filename,
                                                        @Param("resolution") int resolution);
 
-
+    @Query("SELECT vd FROM VideoDetails vd ")
+    List<VideoDetails> findVideoDetailsByUser(String username);
 
 }

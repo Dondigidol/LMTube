@@ -1,6 +1,5 @@
 package application.security;
 
-import application.entities.ADUser;
 import application.entities.User;
 import io.jsonwebtoken.*;
 import org.springframework.security.core.Authentication;
@@ -57,9 +56,17 @@ public class JwtTokenProvider {
 
     public String getUserNameFromJWT(String token){
         Claims claims = Jwts.parser().setSigningKey(SECRET).parseClaimsJws(token).getBody();
-        String username = (String) claims.get("username");
+        return (String) claims.get("username");
+    }
 
-        return username;
+    public User getUserFromJWT(String token){
+        Claims claims = Jwts.parser().setSigningKey(SECRET).parseClaimsJws(token).getBody();
+        User user = new User();
+        user.setUsername((String) claims.get("username"));
+        user.setFullName((String) claims.get("fullName"));
+        user.setPosition((String) claims.get("position"));
+        user.setRole((String) claims.get("role"));
+        return user;
     }
 
 

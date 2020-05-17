@@ -41,4 +41,8 @@ public class VideoDetailsService {
     public List<VideoDetails> getRecommendations(long id){
         return videoDetailsRepository.findRecommendations(id);
     }
+
+    public List<VideoDetails> getUserVideoDetails(String username){
+        return videoDetailsRepository.findVideoDetailsByUser(username);
+    }
 }

@@ -1,9 +1,11 @@
 package application.controllers;
 
 import application.entities.Poster;
+import application.entities.User;
 import application.entities.Video;
 import application.entities.VideoDetails;
 import application.services.PosterService;
+import application.services.UserService;
 import application.services.VideoDetailsService;
 import application.services.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.security.Principal;
 import java.util.*;
 
 @RestController
@@ -30,6 +33,9 @@ public class RestVideoController {
     @Autowired
     private VideoDetailsService videoDetailsService;
 
+    @Autowired
+    private UserService userService;
+
     @GetMapping
     public ResponseEntity<List<VideoDetails>> getVideos(){
         List<VideoDetails> videos = videoDetailsService.getVideosDetails();
@@ -43,7 +49,11 @@ public class RestVideoController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<VideoDetails> uploadVideo(@RequestBody VideoDetails videoDetails){
+    public ResponseEntity<VideoDetails> uploadVideo(@RequestBody VideoDetails videoDetails,
+                                                    Principal principal){
+
+        User user = userService.getUser(principal.getName());
+        videoDetails.setAuthor(user);
         videoDetailsService.save(videoDetails);
         return new ResponseEntity<>(videoDetails, HttpStatus.OK);
     }
@@ -69,7 +79,7 @@ public class RestVideoController {
         headers.set("Content-Type", video.getMimeType());
         headers.set("Content-length", String.valueOf(video.getContentLength()));
 
-        return new ResponseEntity<InputStreamResource>(resource, headers, HttpStatus.OK);
+        return new ResponseEntity<>(resource, headers, HttpStatus.OK);
     }
 
     @GetMapping("/recommendations/{id}")
