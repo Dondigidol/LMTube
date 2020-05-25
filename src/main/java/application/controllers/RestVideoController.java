@@ -4,11 +4,10 @@ import application.entities.Poster;
 import application.entities.User;
 import application.entities.Video;
 import application.entities.VideoDetails;
+import application.payload.VideoUploadRequest;
 import application.security.JwtTokenProvider;
-import application.services.PosterService;
-import application.services.UserService;
-import application.services.VideoDetailsService;
-import application.services.VideoService;
+import application.services.*;
+import application.validators.UploadFormValidator;
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +15,13 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.security.Principal;
 import java.sql.SQLOutput;
 import java.util.ArrayList;
@@ -44,6 +46,16 @@ public class RestVideoController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private MapValidationErrorService mapValidationErrorService;
+
+    @Autowired
+    private UploadFormValidator uploadFormValidator;
+
+    @InitBinder
+    protected void initBinderVideoUpload(WebDataBinder binder){
+        binder.setValidator(uploadFormValidator);
+    }
 
     @Autowired
     private JwtTokenProvider tokenProvider;
@@ -87,53 +99,29 @@ public class RestVideoController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadForm(@RequestParam ("title") String title,
-                                        @RequestParam ("description") String description,
-                                        @RequestParam (value = "videoFile") MultipartFile videoFile,
-                                        @RequestParam (value = "posterFile") MultipartFile posterFile,
-                                        HttpServletResponse response)
+    public ResponseEntity<?> uploadForm(@Valid  VideoUploadRequest videoUploadRequest,
+                                        BindingResult result)
                                        // Principal principal)
     {
 
-        Map<String, Object> errorsMap = new HashMap<>();
-        ArrayList<String> errorsList = new ArrayList<>();
-
-        System.out.println(response.getStatus());
-/*        if (principal== null){
-            errorsMap.put("error", "Вы не авторизованы");
-            return new ResponseEntity<>(errorsMap, HttpStatus.BAD_REQUEST);
-        }*/
-
-        if (title.isEmpty()) errorsMap.put("title", "Вы не заполнили заголовок");
-        if (description.isEmpty()) errorsMap.put("description", "Вы не заполнили описание");
-        if (videoFile.isEmpty() || videoFile == null) errorsMap.put("videoFile", "Вы не выбрали видеофайл");
-        if (posterFile.isEmpty() || posterFile == null) errorsMap.put("posterFile","Вы не выбрали постер");
-
-        if (errorsMap.isEmpty()){
-            try{
-                //User user = userService.getUser(principal.getName());
-                List<Video> videosList = videoService.upload(videoFile);
-                Poster poster = posterService.upload(posterFile);
-
-                VideoDetails videoDetails = new VideoDetails();
-                videoDetails.setTitle(title);
-                videoDetails.setDescription(description);
-                videoDetails.setPoster(poster);
-                videoDetails.setVideos(videosList);
-                //videoDetails.setAuthor(user);
-                videoDetailsService.save(videoDetails);
-                return new ResponseEntity<>(videoDetails, HttpStatus.OK);
-            } catch (NullPointerException ex){
-                errorsList.add("Ошибка корректности данных: " + ex);
-                System.out.println("Ошибка корректности данных: " + ex);
-            } catch (Exception ex){
-                errorsList.add("Непредвиденная ошибка: " + ex);
-                System.out.println("Непредвиденная ошибка: " + ex);
-            }
+        ResponseEntity<?> errorMap = mapValidationErrorService.validate(result);
+        if (errorMap != null){
+            return  errorMap;
         }
-        if (!errorsList.isEmpty()) errorsMap.put("error", errorsList);
-        System.out.println(errorsMap);
-        return new ResponseEntity<>(errorsMap, HttpStatus.BAD_REQUEST);
+
+        //User user = userService.getUser(principal.getName());
+        List<Video> videosList = videoService.upload(videoUploadRequest.getVideoFile());
+        Poster poster = posterService.upload(videoUploadRequest.getPosterFile());
+
+        VideoDetails videoDetails = new VideoDetails();
+        videoDetails.setTitle(videoUploadRequest.getTitle());
+        videoDetails.setDescription(videoUploadRequest.getDescription());
+        videoDetails.setPoster(poster);
+        videoDetails.setVideos(videosList);
+        //videoDetails.setAuthor(user);
+        videoDetailsService.save(videoDetails);
+        return new ResponseEntity<>(videoDetails, HttpStatus.OK);
+
 
     }
 }

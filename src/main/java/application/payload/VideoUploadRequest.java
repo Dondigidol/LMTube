@@ -2,17 +2,11 @@ package application.payload;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.validation.constraints.NotBlank;
-
 public class VideoUploadRequest {
 
-    @NotBlank(message = "Заполните заголовок")
     private String title;
-    @NotBlank(message = "Заполинте описание")
     private String description;
-    @NotBlank(message = "Выбирете видеофайл")
     private MultipartFile videoFile;
-    @NotBlank(message = "Выбирете постер")
     private MultipartFile posterFile;
 
     public String getTitle() {
