@@ -4,10 +4,13 @@ import application.entities.Poster;
 import application.entities.User;
 import application.entities.Video;
 import application.entities.VideoDetails;
+import application.security.JwtTokenProvider;
 import application.services.PosterService;
 import application.services.UserService;
 import application.services.VideoDetailsService;
 import application.services.VideoService;
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
+import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -16,8 +19,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.security.Principal;
-import java.util.*;
+import java.sql.SQLOutput;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/video")
@@ -36,6 +44,11 @@ public class RestVideoController {
     @Autowired
     private UserService userService;
 
+
+    @Autowired
+    private JwtTokenProvider tokenProvider;
+
+
     @GetMapping
     public ResponseEntity<List<VideoDetails>> getVideos(){
         List<VideoDetails> videos = videoDetailsService.getVideosDetails();
@@ -45,22 +58,6 @@ public class RestVideoController {
     @GetMapping("/search")
     public ResponseEntity<List<VideoDetails>> searchVideos(@RequestParam("title") String title){
         List<VideoDetails> videos = videoDetailsService.searchByTitle(title);
-        return new ResponseEntity<>(videos, HttpStatus.OK);
-    }
-
-    @PostMapping("/upload")
-    public ResponseEntity<VideoDetails> uploadVideo(@RequestBody VideoDetails videoDetails,
-                                                    Principal principal){
-
-        User user = userService.getUser(principal.getName());
-        videoDetails.setAuthor(user);
-        videoDetailsService.save(videoDetails);
-        return new ResponseEntity<>(videoDetails, HttpStatus.OK);
-    }
-
-    @PostMapping("/upload-video")
-    public ResponseEntity<List<Video>> uploadVideoFile(@RequestParam("videoFile") MultipartFile videoFile){
-        List<Video> videos = videoService.upload(videoFile);
         return new ResponseEntity<>(videos, HttpStatus.OK);
     }
 
@@ -89,5 +86,54 @@ public class RestVideoController {
         return new ResponseEntity<>(recommendedVideos, HttpStatus.OK);
     }
 
+    @PostMapping("/upload")
+    public ResponseEntity<?> uploadForm(@RequestParam ("title") String title,
+                                        @RequestParam ("description") String description,
+                                        @RequestParam (value = "videoFile") MultipartFile videoFile,
+                                        @RequestParam (value = "posterFile") MultipartFile posterFile,
+                                        HttpServletResponse response)
+                                       // Principal principal)
+    {
 
+        Map<String, Object> errorsMap = new HashMap<>();
+        ArrayList<String> errorsList = new ArrayList<>();
+
+        System.out.println(response.getStatus());
+/*        if (principal== null){
+            errorsMap.put("error", "Вы не авторизованы");
+            return new ResponseEntity<>(errorsMap, HttpStatus.BAD_REQUEST);
+        }*/
+
+        if (title.isEmpty()) errorsMap.put("title", "Вы не заполнили заголовок");
+        if (description.isEmpty()) errorsMap.put("description", "Вы не заполнили описание");
+        if (videoFile.isEmpty() || videoFile == null) errorsMap.put("videoFile", "Вы не выбрали видеофайл");
+        if (posterFile.isEmpty() || posterFile == null) errorsMap.put("posterFile","Вы не выбрали постер");
+
+        if (errorsMap.isEmpty()){
+            try{
+                //User user = userService.getUser(principal.getName());
+                List<Video> videosList = videoService.upload(videoFile);
+                Poster poster = posterService.upload(posterFile);
+
+                VideoDetails videoDetails = new VideoDetails();
+                videoDetails.setTitle(title);
+                videoDetails.setDescription(description);
+                videoDetails.setPoster(poster);
+                videoDetails.setVideos(videosList);
+                //videoDetails.setAuthor(user);
+                videoDetailsService.save(videoDetails);
+                return new ResponseEntity<>(videoDetails, HttpStatus.OK);
+            } catch (NullPointerException ex){
+                errorsList.add("Ошибка корректности данных: " + ex);
+                System.out.println("Ошибка корректности данных: " + ex);
+            } catch (Exception ex){
+                errorsList.add("Непредвиденная ошибка: " + ex);
+                System.out.println("Непредвиденная ошибка: " + ex);
+            }
+        }
+        if (!errorsList.isEmpty()) errorsMap.put("error", errorsList);
+        System.out.println(errorsMap);
+        return new ResponseEntity<>(errorsMap, HttpStatus.BAD_REQUEST);
+
+    }
 }

@@ -35,11 +35,7 @@ public class UserService {
     }
 
     public void updateUser(User user){
-        User userRole = new User();
-        userRole.setUsername(user.getUsername());
-        userRole.setFullName(user.getFullName());
-        userRole.setRole(user.getRole());
-        userRepository.save(userRole);
+        userRepository.save(user);
     }
 
 }

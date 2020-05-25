@@ -1,7 +1,9 @@
 package application.security;
 
 import application.entities.User;
+import application.exceptions.InvalidLoginResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -35,6 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+
             }
         }catch (Exception e){
             logger.error("Could not set user authentication in security context", e);
@@ -45,10 +48,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private String getJWTFromRequest(HttpServletRequest request){
         String token = request.getHeader(HEADER_STRING);
+
         if (StringUtils.hasText(token) && token.startsWith(TOKEN_PREFIX)){
             return token.substring(TOKEN_PREFIX.length());
         }
-
         return null;
     }
 }

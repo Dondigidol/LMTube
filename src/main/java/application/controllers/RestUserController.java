@@ -1,6 +1,5 @@
 package application.controllers;
 
-import application.entities.User;
 import application.entities.VideoDetails;
 import application.exceptions.InvalidLoginResponse;
 import application.payload.JWTLoginSuccessResponse;
@@ -19,12 +18,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.security.Principal;
 import java.util.List;
 
-import static application.security.SecurityConstants.HEADER_STRING;
 import static application.security.SecurityConstants.TOKEN_PREFIX;
 
 @RestController
@@ -79,7 +76,6 @@ public class RestUserController {
 
     @GetMapping("/videos")
     public ResponseEntity<?> getUserVideos(Principal principal){
-
         List<VideoDetails> videoDetails = videoDetailsService.getUserVideoDetails(principal.getName());
         return new ResponseEntity<>(videoDetails, HttpStatus.OK);
 
