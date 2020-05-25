@@ -1,15 +1,12 @@
 package application.controllers;
 
 import application.entities.Poster;
-import application.entities.User;
 import application.entities.Video;
 import application.entities.VideoDetails;
 import application.payload.VideoUploadRequest;
 import application.security.JwtTokenProvider;
 import application.services.*;
 import application.validators.UploadFormValidator;
-import com.fasterxml.jackson.annotation.JsonIgnoreType;
-import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -18,16 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.security.Principal;
-import java.sql.SQLOutput;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/video")

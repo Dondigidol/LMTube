@@ -5,8 +5,8 @@ public class InvalidLoginResponse {
     private String password;
 
     public InvalidLoginResponse(){
-        this.username = "Invalid username";
-        this.password = "Invalid password";
+        this.username = "Неверный логин или пароль";
+        this.password = "Неверный логин или пароль";
     }
 
     public String getUsername() {

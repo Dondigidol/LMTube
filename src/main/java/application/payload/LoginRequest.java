@@ -4,9 +4,9 @@ import javax.validation.constraints.NotBlank;
 
 public class LoginRequest {
 
-    @NotBlank(message = "Логин не может быть пустым")
+    @NotBlank(message = "Введите логин")
     private String username;
-    @NotBlank(message = "Пароль не можут быть пустым")
+    @NotBlank(message = "Введите пароль")
     private String password;
 
     public String getUsername() {
