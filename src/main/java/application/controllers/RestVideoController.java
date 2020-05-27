@@ -1,6 +1,7 @@
 package application.controllers;
 
 import application.entities.Poster;
+import application.entities.User;
 import application.entities.Video;
 import application.entities.VideoDetails;
 import application.payload.VideoUploadRequest;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -90,16 +92,15 @@ public class RestVideoController {
 
     @PostMapping("/upload")
     public ResponseEntity<?> uploadForm(@Valid  VideoUploadRequest videoUploadRequest,
-                                        BindingResult result)
-                                       // Principal principal)
-    {
+                                        BindingResult result,
+                                        Principal principal){
 
         ResponseEntity<?> errorMap = mapValidationErrorService.validate(result);
         if (errorMap != null){
             return  errorMap;
         }
 
-        //User user = userService.getUser(principal.getName());
+        User user = userService.getUser(principal.getName());
         List<Video> videosList = videoService.upload(videoUploadRequest.getVideoFile());
         Poster poster = posterService.upload(videoUploadRequest.getPosterFile());
 
@@ -108,7 +109,7 @@ public class RestVideoController {
         videoDetails.setDescription(videoUploadRequest.getDescription());
         videoDetails.setPoster(poster);
         videoDetails.setVideos(videosList);
-        //videoDetails.setAuthor(user);
+        videoDetails.setAuthor(user);
         videoDetailsService.save(videoDetails);
         return new ResponseEntity<>(videoDetails, HttpStatus.OK);
 

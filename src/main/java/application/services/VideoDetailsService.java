@@ -45,4 +45,5 @@ public class VideoDetailsService {
     public List<VideoDetails> getUserVideoDetails(String username){
         return videoDetailsRepository.findVideoDetailsByUser(username);
     }
+
 }

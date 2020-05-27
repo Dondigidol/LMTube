@@ -78,6 +78,5 @@ public class RestUserController {
     public ResponseEntity<?> getUserVideos(Principal principal){
         List<VideoDetails> videoDetails = videoDetailsService.getUserVideoDetails(principal.getName());
         return new ResponseEntity<>(videoDetails, HttpStatus.OK);
-
     }
 }
