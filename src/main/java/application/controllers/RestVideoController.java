@@ -9,15 +9,18 @@ import application.security.JwtTokenProvider;
 import application.services.*;
 import application.validators.UploadFormValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 
@@ -70,17 +73,21 @@ public class RestVideoController {
         return new ResponseEntity<>(videoDetailsService.getById(id), HttpStatus.OK);
     }
 
-    @GetMapping("/stream/{id}")
-    public ResponseEntity<?> getVideoStream(@PathVariable("id") String videoFileName,
-                                            @RequestParam("res") int resolution){
-        InputStreamResource resource = videoService.load(videoFileName, resolution);
+    @GetMapping("/stream/{resolution}/{id}")
+    public ResponseEntity<?> getVideoStream(@PathVariable("resolution") int resolution,
+                                            @PathVariable("id") String videoFileName){
+
+
         Video video = videoService.getVideoInfo(videoFileName, resolution);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", video.getMimeType());
         headers.set("Content-length", String.valueOf(video.getContentLength()));
 
-        return new ResponseEntity<>(resource, headers, HttpStatus.OK);
+        FileSystemResource fsr =  new FileSystemResource(new File(videoService.getPath(videoFileName, resolution)));
+
+        return new ResponseEntity<>(fsr, headers, HttpStatus.OK);
+
     }
 
     @GetMapping("/recommendations/{id}")

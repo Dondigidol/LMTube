@@ -90,13 +90,19 @@ public class VideoService {
                     sessionService.addToViews(video.getId());
                 }
             }
-
-
             return isr;
         } catch (IOException e){
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String getPath(String videoFileName, int resolution){
+
+        Path filePath = Paths.get(videosPath + "\\" + resolution + "p\\" + videoFileName);
+        if (!Files.exists(filePath))
+            throw new VideoIdException("Видео с ID '" + videoFileName + "' и разрешением '" + resolution + "' не существует");
+        return filePath.toString();
     }
 
     public Video getVideoInfo(String videoName, int resolution){
