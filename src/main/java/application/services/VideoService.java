@@ -80,17 +80,8 @@ public class VideoService {
             Path filePath = Paths.get(videosPath + "\\" + resolution + "p\\" + videoFileName);
             if (!Files.exists(filePath)) throw new VideoIdException("Видео с ID '" + videoFileName + "' не существует");
 
-            InputStreamResource isr = new InputStreamResource(new FileInputStream(filePath.toFile()));
-
-            Optional<VideoDetails> vd = videoDetailsRepository.findByFileNameAndResolution(videoFileName, resolution);
-            if (vd.isPresent()){
-                VideoDetails video = vd.get();
-                if (!sessionService.isPresent(video.getId())) {
-                    videoDetailsRepository.updateVideoViews(video.getId());
-                    sessionService.addToViews(video.getId());
-                }
-            }
-            return isr;
+            return new InputStreamResource(new FileInputStream(filePath.toFile()));
+            
         } catch (IOException e){
             e.printStackTrace();
         }
@@ -142,7 +133,16 @@ public class VideoService {
         return null;
     }
 
-
+    public void incrementView(String videoFileName, int resolution){
+        Optional<VideoDetails> vd = videoDetailsRepository.findByFileNameAndResolution(videoFileName, resolution);
+        if (vd.isPresent()){
+            VideoDetails video = vd.get();
+            if (!sessionService.isPresent(video.getId())) {
+                videoDetailsRepository.updateVideoViews(video.getId());
+                sessionService.addToViews(video.getId());
+            }
+        }
+    }
 
 
 

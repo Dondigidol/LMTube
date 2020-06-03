@@ -79,6 +79,7 @@ public class RestVideoController {
 
 
         Video video = videoService.getVideoInfo(videoFileName, resolution);
+        videoService.incrementView(videoFileName, resolution);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", video.getMimeType());
