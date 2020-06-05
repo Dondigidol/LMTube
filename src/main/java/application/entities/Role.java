@@ -1,17 +1,8 @@
 package application.entities;
 
 public enum Role {
-    CREATOR("creator"),
-    MODERATOR("moderator"),
-    ADMINISTRATOR("administrator");
+    CREATOR,
+    MODERATOR,
+    ADMINISTRATOR,
 
-    private String value;
-
-    Role(String value){
-        this.value = value;
-    }
-
-    public String getValue() {
-        return value;
-    }
 }

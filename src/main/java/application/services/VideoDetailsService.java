@@ -34,8 +34,8 @@ public class VideoDetailsService {
 
     }
 
-    public List<VideoDetails> searchByTitle(String title){
-        return videoDetailsRepository.searchByTitle(title);
+    public List<VideoDetails> getVideos(String title, boolean isAvailable){
+        return videoDetailsRepository.getVideos(title, isAvailable);
     }
 
     public List<VideoDetails> getRecommendations(long id){
@@ -44,6 +44,10 @@ public class VideoDetailsService {
 
     public List<VideoDetails> getUserVideoDetails(String username){
         return videoDetailsRepository.findVideoDetailsByUser(username);
+    }
+
+    public void setAvailability(long id, boolean available){
+        videoDetailsRepository.setAvailability(id, available);
     }
 
 }

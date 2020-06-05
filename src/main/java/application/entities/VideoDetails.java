@@ -21,6 +21,8 @@ public class VideoDetails {
     private Date createdAt;
     @Column(name = "views")
     private long views;
+    @Column(name = "available")
+    private boolean available;
 
     @ManyToOne
     @JoinColumn(name = "author")
@@ -73,6 +75,14 @@ public class VideoDetails {
 
     public void setViews(long views) {
         this.views = views;
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
     }
 
     public List<Video> getVideos() {

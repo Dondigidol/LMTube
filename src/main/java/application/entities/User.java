@@ -18,7 +18,7 @@ public class User implements UserDetails {
     @NotNull(message = "Укажите ldap сотрудника")
     private String username;
     @NotNull(message = "Укажите роль сотрудника")
-    private String role;
+    private Role role;
     private String fullName;
     private String position;
     //@JsonFormat(pattern = "dd.MM.yyyy hh:mm:ss")
@@ -37,11 +37,11 @@ public class User implements UserDetails {
         this.username = username;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 

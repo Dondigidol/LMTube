@@ -26,12 +26,8 @@ public class UserService {
     }
 
     // список доступных ролей
-    public List<String> getAvailableRoles(){
-        List<String> roles = new ArrayList<>();
-        for(Role role: Role.values()){
-            roles.add(role.getValue());
-        }
-        return roles;
+    public Role[] getAvailableRoles(){
+        return Role.values();
     }
 
     public void updateUser(User user){

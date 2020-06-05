@@ -1,9 +1,11 @@
 package application.security;
 
+import application.entities.Role;
 import application.entities.User;
 import io.jsonwebtoken.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -64,7 +66,7 @@ public class JwtTokenProvider {
         user.setUsername((String) claims.get("username"));
         user.setFullName((String) claims.get("fullName"));
         user.setPosition((String) claims.get("position"));
-        user.setRole((String) claims.get("role"));
+        user.setRole(Role.valueOf(((String)claims.get("role")).toUpperCase()));
         return user;
     }
 

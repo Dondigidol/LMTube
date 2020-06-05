@@ -1,5 +1,6 @@
 package application.controllers;
 
+import application.entities.Role;
 import application.entities.VideoDetails;
 import application.exceptions.InvalidLoginResponse;
 import application.payload.JWTLoginSuccessResponse;
@@ -68,8 +69,8 @@ public class RestUserController {
     }
 
     @GetMapping("/roles")
-    public ResponseEntity<List<String>> getAvailableRoles(){
-        List<String> roles = userRoleService.getAvailableRoles();
+    public ResponseEntity<Role[]> getAvailableRoles(){
+        Role[] roles = userRoleService.getAvailableRoles();
         return new ResponseEntity<>(roles, HttpStatus.OK);
     }
 

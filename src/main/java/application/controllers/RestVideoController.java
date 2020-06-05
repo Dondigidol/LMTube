@@ -1,9 +1,6 @@
 package application.controllers;
 
-import application.entities.Poster;
-import application.entities.User;
-import application.entities.Video;
-import application.entities.VideoDetails;
+import application.entities.*;
 import application.payload.VideoUploadRequest;
 import application.security.JwtTokenProvider;
 import application.services.*;
@@ -23,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.jar.JarOutputStream;
 
 @RestController
 @RequestMapping("/api/video")
@@ -62,9 +60,10 @@ public class RestVideoController {
         return new ResponseEntity<>(videos, HttpStatus.OK);
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<VideoDetails>> searchVideos(@RequestParam("title") String title){
-        List<VideoDetails> videos = videoDetailsService.searchByTitle(title);
+    @GetMapping("/videos")
+    public ResponseEntity<List<VideoDetails>> searchVideos(@RequestParam("title") String title,
+                                                           @RequestParam("available") boolean isAvailable){
+        List<VideoDetails> videos = videoDetailsService.getVideos(title, isAvailable);
         return new ResponseEntity<>(videos, HttpStatus.OK);
     }
 
@@ -122,5 +121,34 @@ public class RestVideoController {
         return new ResponseEntity<>(videoDetails, HttpStatus.OK);
 
 
+    }
+
+    @PostMapping("/availability")
+    public ResponseEntity<?> videoAvailability(@RequestParam ("id") long id,
+                                          @RequestParam ("available") boolean isAvailable,
+                                          Principal principal){
+
+
+        User user =  userService.getUser(principal.getName());
+        Role userRole = user.getRole();
+
+
+        switch (userRole){
+            case ADMINISTRATOR:
+            case MODERATOR:
+                videoDetailsService.setAvailability(id, isAvailable);
+                break;
+            case CREATOR:
+                VideoDetails videoDetails = videoDetailsService.getById(id);
+                if (videoDetails.getAuthor().getUsername().equals(user.getUsername())){
+                    videoDetailsService.setAvailability(id, isAvailable);
+                } else
+                    return new ResponseEntity<>("Недостаточно полномочий!", HttpStatus.FORBIDDEN);
+                break;
+            default:
+                break;
+        }
+
+        return null;
     }
 }
