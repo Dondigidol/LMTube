@@ -27,9 +27,9 @@ public interface VideoDetailsRepository extends CrudRepository<VideoDetails, Lon
 
     //@Query("SELECT vd FROM VideoDetails vd WHERE id<>:id ORDER BY createdAt DESC Limit 20")
     default List<VideoDetails> findRecommendations(long id){
-        return findTop20ByIdNotAndNotAvailableOrderByCreatedAtDesc(id);    }
+        return findTop20ByIdNotAndAvailableOrderByCreatedAtDesc(id, true);    }
 
-    List<VideoDetails> findTop20ByIdNotAndNotAvailableOrderByCreatedAtDesc(long id);
+    List<VideoDetails> findTop20ByIdNotAndAvailableOrderByCreatedAtDesc(long id, boolean available);
 
     @Query("SELECT vd FROM VideoDetails vd JOIN FETCH vd.videos v WHERE v.name=:name and v.resolution=:resolution")
     Optional<VideoDetails> findByFileNameAndResolution(@Param("name") String filename,

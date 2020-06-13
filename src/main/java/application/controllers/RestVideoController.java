@@ -5,6 +5,7 @@ import application.payload.VideoUploadRequest;
 import application.security.JwtTokenProvider;
 import application.services.*;
 import application.validators.UploadFormValidator;
+import org.apache.logging.log4j.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
@@ -102,24 +103,30 @@ public class RestVideoController {
                                         BindingResult result,
                                         Principal principal){
 
-        ResponseEntity<?> errorMap = mapValidationErrorService.validate(result);
-        if (errorMap != null){
-            return  errorMap;
+        try {
+            ResponseEntity<?> errorMap = mapValidationErrorService.validate(result);
+            if (errorMap != null){
+                return  errorMap;
+            }
+
+            User user = userService.getUser(principal.getName());
+            List<Video> videosList = videoService.upload(videoUploadRequest.getVideoFile());
+            Poster poster = posterService.upload(videoUploadRequest.getPosterFile());
+
+            VideoDetails videoDetails = new VideoDetails();
+            videoDetails.setTitle(videoUploadRequest.getTitle());
+            videoDetails.setDescription(videoUploadRequest.getDescription());
+            videoDetails.setPoster(poster);
+            videoDetails.setVideos(videosList);
+            videoDetails.setAuthor(user);
+            videoDetailsService.save(videoDetails);
+            LoggerService.log(Level.INFO, user.getUsername() + ": Video with ID '"+ videoDetails.getId() +"' was uploaded.");
+            return new ResponseEntity<>(videoDetails, HttpStatus.OK);
+        } catch (Exception e){
+            LoggerService.log(Level.ERROR, e.getMessage());
         }
 
-        User user = userService.getUser(principal.getName());
-        List<Video> videosList = videoService.upload(videoUploadRequest.getVideoFile());
-        Poster poster = posterService.upload(videoUploadRequest.getPosterFile());
-
-        VideoDetails videoDetails = new VideoDetails();
-        videoDetails.setTitle(videoUploadRequest.getTitle());
-        videoDetails.setDescription(videoUploadRequest.getDescription());
-        videoDetails.setPoster(poster);
-        videoDetails.setVideos(videosList);
-        videoDetails.setAuthor(user);
-        videoDetailsService.save(videoDetails);
-        return new ResponseEntity<>(videoDetails, HttpStatus.OK);
-
+        return null;
 
     }
 
@@ -131,7 +138,6 @@ public class RestVideoController {
 
         User user =  userService.getUser(principal.getName());
         Role userRole = user.getRole();
-
 
         switch (userRole){
             case ADMINISTRATOR:
@@ -149,6 +155,8 @@ public class RestVideoController {
                 break;
         }
 
-        return null;
+        VideoDetails videoDetails = videoDetailsService.getById(id);
+
+        return new ResponseEntity<>(videoDetails, HttpStatus.OK);
     }
 }

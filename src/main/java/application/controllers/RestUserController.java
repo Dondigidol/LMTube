@@ -7,9 +7,11 @@ import application.payload.JWTLoginSuccessResponse;
 import application.payload.LoginRequest;
 import application.security.JwtTokenProvider;
 import application.security.LdapAuthenticationProvider;
+import application.services.LoggerService;
 import application.services.MapValidationErrorService;
 import application.services.UserService;
 import application.services.VideoDetailsService;
+import org.apache.logging.log4j.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,23 +51,33 @@ public class RestUserController {
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest,
                                               BindingResult result){
 
-        ResponseEntity<?> errorMap = mapValidationErrorService.validate(result);
-        if (errorMap != null){
-            return errorMap;
+        try {
+            ResponseEntity<?> errorMap = mapValidationErrorService.validate(result);
+            if (errorMap != null){
+                return errorMap;
+            }
+
+            Authentication authentication = ldapAuthenticationProvider.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+
+            if (authentication == null){
+                LoggerService.log(Level.ERROR, loginRequest.getUsername() + ": authentication error");
+                return new ResponseEntity<>(new InvalidLoginResponse(), HttpStatus.BAD_REQUEST);
+            }
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            String token = tokenProvider.generateToken(authentication);
+            String jwt = TOKEN_PREFIX + token;
+
+            LoggerService.log(Level.INFO, loginRequest.getUsername()+": authentication success, token was generated successfully");
+            return ResponseEntity.ok(new JWTLoginSuccessResponse(true, jwt));
+
+        } catch (Exception e){
+            LoggerService.log(Level.ERROR, e.getMessage());
         }
 
-        Authentication authentication = ldapAuthenticationProvider.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-
-        if (authentication == null){
-            return new ResponseEntity<>(new InvalidLoginResponse(), HttpStatus.BAD_REQUEST);
-        }
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = TOKEN_PREFIX + tokenProvider.generateToken(authentication);
-        return ResponseEntity.ok(new JWTLoginSuccessResponse(true, jwt));
-
-
+        return null;
     }
 
     @GetMapping("/roles")

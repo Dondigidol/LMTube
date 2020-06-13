@@ -1,7 +1,9 @@
 package application.security;
 
 import application.entities.User;
+import application.services.LoggerService;
 import application.services.UserService;
+import org.apache.logging.log4j.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,8 +35,7 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
                 return new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());
             }
         } catch (NamingException e){
-
-            System.out.println(username + " - invalid username or password");
+            LoggerService.log(Level.ERROR, e.getMessage());
         }
         return null;
     }
