@@ -1,7 +1,5 @@
 package application.services;
 
-import application.entities.Poster;
-import application.entities.Video;
 import application.entities.VideoDetails;
 import application.exceptions.VideoIdException;
 import application.repositories.VideoDetailsRepository;
@@ -21,17 +19,18 @@ public class VideoDetailsService {
         videoDetailsRepository.save(videoDetails);
     }
 
-    public List<VideoDetails> getVideosDetails(){
+    public List<VideoDetails> gelAllVideos(){
         return videoDetailsRepository.findAll();
     }
 
-    public VideoDetails getById(long id){
+    public VideoDetails getById(long id, boolean authenticated){
         Optional<VideoDetails> vd = videoDetailsRepository.findById(id);
         if (vd.isPresent()){
-            return vd.get();
-        } else
-            throw new VideoIdException("Видео с ID '" + id + "' не найдено!");
-
+            if (vd.get().isAvailable() || authenticated) return vd.get();
+            //else throw new VideoIdException("Видео с ID '" + id + "' недоступно для просмотра");
+            else throw new VideoIdException("Видео снято с публикации и недоступно для просмотра.");
+        }
+        else throw new VideoIdException("Видео не найдено, попробуйте воспользоваться поиском.");
     }
 
     public List<VideoDetails> getVideos(String title, boolean isAvailable){
@@ -39,6 +38,7 @@ public class VideoDetailsService {
     }
 
     public List<VideoDetails> getRecommendations(long id){
+        System.out.println(id);
         return videoDetailsRepository.findRecommendations(id);
     }
 

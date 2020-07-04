@@ -1,6 +1,7 @@
 package application.controllers;
 
 import application.entities.*;
+import application.exceptions.VideoIdException;
 import application.payload.VideoUploadRequest;
 import application.security.JwtTokenProvider;
 import application.services.*;
@@ -8,7 +9,6 @@ import application.validators.UploadFormValidator;
 import org.apache.logging.log4j.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.*;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
@@ -16,12 +16,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.security.Principal;
+import java.text.ParseException;
 import java.util.List;
-import java.util.jar.JarOutputStream;
 
 @RestController
 @RequestMapping("/api/video")
@@ -57,20 +54,51 @@ public class RestVideoController {
 
     @GetMapping
     public ResponseEntity<List<VideoDetails>> getVideos(){
-        List<VideoDetails> videos = videoDetailsService.getVideosDetails();
+        List<VideoDetails> videos = videoDetailsService.gelAllVideos();
         return new ResponseEntity<>(videos, HttpStatus.OK);
     }
 
     @GetMapping("/videos")
     public ResponseEntity<List<VideoDetails>> searchVideos(@RequestParam("title") String title,
-                                                           @RequestParam("available") boolean isAvailable){
+                                                           @RequestParam("available") boolean isAvailable,
+                                                           Principal principal){
+        boolean authenticated = false;
+        try {
+            User user = userService.getUser(principal.getName());
+            if (user != null){
+                authenticated = true;
+            }
+        } catch (NullPointerException e){
+
+        }
+
+        if (!authenticated && !isAvailable){
+            isAvailable = true;
+        }
+
         List<VideoDetails> videos = videoDetailsService.getVideos(title, isAvailable);
         return new ResponseEntity<>(videos, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<VideoDetails> getVideo(@PathVariable("id") long id){
-        return new ResponseEntity<>(videoDetailsService.getById(id), HttpStatus.OK);
+    public ResponseEntity<VideoDetails> getVideo(@PathVariable("id") String varId,
+                                                 Principal principal){
+
+
+        boolean authenticated = false;
+
+        Long id = null;
+
+        try {
+            id = Long.parseLong(varId);
+            User user = userService.getUser(principal.getName());
+            if (user != null) authenticated = true;
+
+        } catch (NullPointerException e){}
+        catch (NumberFormatException e){
+            throw new VideoIdException("Видео не найдено, попробуйте воспользоваться поиском.");
+        }
+        return new ResponseEntity<>(videoDetailsService.getById(id, authenticated), HttpStatus.OK);
     }
 
     @GetMapping("/stream/{resolution}/{id}")
@@ -135,27 +163,33 @@ public class RestVideoController {
                                           @RequestParam ("available") boolean isAvailable,
                                           Principal principal){
 
+        boolean authenticated  = false;
 
-        User user =  userService.getUser(principal.getName());
-        Role userRole = user.getRole();
-
-        switch (userRole){
-            case ADMINISTRATOR:
-            case MODERATOR:
-                videoDetailsService.setAvailability(id, isAvailable);
-                break;
-            case CREATOR:
-                VideoDetails videoDetails = videoDetailsService.getById(id);
-                if (videoDetails.getAuthor().getUsername().equals(user.getUsername())){
+        try {
+            User user =  userService.getUser(principal.getName());
+            if (user != null) authenticated = true;
+            Role userRole = user.getRole();
+            switch (userRole){
+                case ADMINISTRATOR:
+                case MODERATOR:
                     videoDetailsService.setAvailability(id, isAvailable);
-                } else
-                    return new ResponseEntity<>("Недостаточно полномочий!", HttpStatus.FORBIDDEN);
-                break;
-            default:
-                break;
+                    break;
+                case CREATOR:
+                    VideoDetails videoDetails = videoDetailsService.getById(id, authenticated);
+                    if (videoDetails.getAuthor().getUsername().equals(user.getUsername())){
+                        videoDetailsService.setAvailability(id, isAvailable);
+                    } else
+                        return new ResponseEntity<>("Недостаточно полномочий!", HttpStatus.FORBIDDEN);
+                    break;
+                default:
+                    break;
+            }
+        } catch (NullPointerException e){
+            String message = "Недостаточно полномочий!";
+            return new ResponseEntity<>(message, HttpStatus.FORBIDDEN);
         }
 
-        VideoDetails videoDetails = videoDetailsService.getById(id);
+        VideoDetails videoDetails = videoDetailsService.getById(id, authenticated);
 
         return new ResponseEntity<>(videoDetails, HttpStatus.OK);
     }
