@@ -1,6 +1,8 @@
 package application.security;
 
 import application.entities.User;
+import application.services.LoggerService;
+import org.apache.logging.log4j.Level;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
@@ -9,7 +11,9 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
+import java.rmi.Naming;
 import java.util.Hashtable;
+import java.util.logging.Logger;
 
 public class ADService {
 
@@ -20,6 +24,12 @@ public class ADService {
     public ADService(String username, String password){
         this.username = username;
         this.password = password;
+        try {
+            init();
+        } catch (NamingException e){
+            LoggerService.log(Level.ERROR, e.getMessage());
+        }
+
     }
 
     public ADService(){}
@@ -32,7 +42,7 @@ public class ADService {
         this.password = password;
     }
 
-    public void init() throws NamingException {
+    private void init() throws NamingException {
         Hashtable<String, String> ldapEnv = new Hashtable<>();
         ldapEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
         ldapEnv.put(Context.PROVIDER_URL, "ldap://ad.lmru.tech:389");

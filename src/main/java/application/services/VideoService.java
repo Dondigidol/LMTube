@@ -8,6 +8,7 @@ import application.repositories.VideoRepository;
 import application.services.FFmpeg.FFmpegService;
 import application.services.FFmpeg.Resolution;
 import net.bytebuddy.description.type.TypeDescription;
+import org.apache.logging.log4j.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 @Service
 public class VideoService {
@@ -56,15 +58,16 @@ public class VideoService {
 
             Resolution resolution = fFmpegService.checkVideoResolution(videosTempPath, videoFileName);
 
-            for (Resolution resolution1: resolutions){
-                if (resolution.getHeight() >= resolution1.getHeight()){
+            for (Resolution resolution1: resolutions) {
+                if (resolution.getHeight() >= resolution1.getHeight()) {
                     Map<String, Object> result = fFmpegService.convert(resolution1.getWidth(), resolution1.getHeight(), videoFileName);
                     Video video = new Video();
                     video.setName(videoFileName);
-                    video.setContentLength((long)result.get("length"));
-                    video.setMimeType((String)result.get("mimeType"));
+                    video.setContentLength((long) result.get("length"));
+                    video.setMimeType((String) result.get("mimeType"));
                     video.setResolution(resolution1.getHeight());
                     videos.add(video);
+                    LoggerService.log(Level.INFO, videoFileName + ": " + video.getResolution() + "p - was uploaded.");
                 }
             }
             return videos;

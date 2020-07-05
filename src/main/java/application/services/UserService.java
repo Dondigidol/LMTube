@@ -30,7 +30,7 @@ public class UserService {
         return Role.values();
     }
 
-    public void updateUser(User user){
+    public void saveUser(User user){
         userRepository.save(user);
     }
 
