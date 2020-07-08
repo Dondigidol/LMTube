@@ -38,7 +38,7 @@ public class VideoDetailsService {
     }
 
     public List<VideoDetails> getRecommendations(long id){
-        System.out.println(id);
+        System.out.println("sadfasdfa");
         return videoDetailsRepository.findRecommendations(id);
     }
 

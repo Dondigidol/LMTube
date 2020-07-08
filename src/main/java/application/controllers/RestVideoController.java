@@ -120,8 +120,15 @@ public class RestVideoController {
     }
 
     @GetMapping("/recommendations/{id}")
-    public ResponseEntity<List<VideoDetails>> getRecommendations(@PathVariable("id") long id){
-        List<VideoDetails> recommendedVideos = videoDetailsService.getRecommendations(id);
+    public ResponseEntity<List<VideoDetails>> getRecommendations(@PathVariable("id") String id){
+
+        List<VideoDetails> recommendedVideos;
+        try {
+            long videoId = Long.parseLong(id);
+            recommendedVideos = videoDetailsService.getRecommendations(videoId);
+        } catch (NumberFormatException e){
+            recommendedVideos = videoDetailsService.getRecommendations(-1);
+        }
 
         return new ResponseEntity<>(recommendedVideos, HttpStatus.OK);
     }
@@ -131,7 +138,7 @@ public class RestVideoController {
                                         BindingResult result,
                                         Principal principal){
 
-       // try {
+        try {
             ResponseEntity<?> errorMap = mapValidationErrorService.validate(result);
             if (errorMap != null){
                 return  errorMap;
@@ -148,13 +155,13 @@ public class RestVideoController {
             videoDetails.setVideos(videosList);
             videoDetails.setAuthor(user);
             videoDetailsService.save(videoDetails);
-            //LoggerService.log(Level.INFO, user.getUsername() + ": Video with ID '"+ videoDetails.getId() +"' was uploaded.");
+            LoggerService.log(Level.INFO, user.getUsername() + ": Video with ID '"+ videoDetails.getId() +"' was uploaded.");
             return new ResponseEntity<>(videoDetails, HttpStatus.OK);
-       // } catch (Exception e){
-        //    LoggerService.log(Level.ERROR, e.getMessage());
-        //}
+        } catch (Exception e){
+            LoggerService.log(Level.ERROR, e.getMessage());
+        }
 
-        //return null;
+        return null;
 
     }
 
