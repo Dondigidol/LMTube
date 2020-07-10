@@ -16,6 +16,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
@@ -151,21 +152,6 @@ public class RestVideoController {
         }
 
         return null;
-
-/*        boolean authenticated = false;
-
-        Long id = null;
-
-        try {
-            id = Long.parseLong(varId);
-            User user = userService.getUser(principal.getName());
-            if (user != null) authenticated = true;
-
-        } catch (NullPointerException e){}
-        catch (NumberFormatException e){
-            throw new VideoIdException("Видео не найдено, попробуйте воспользоваться поиском.");
-        }
-        return new ResponseEntity<>(videoDetailsService.getById(id, authenticated), HttpStatus.OK);*/
     }
 
     private VideoDetails getVideo(long id, String username, boolean isModerator){
@@ -282,5 +268,51 @@ public class RestVideoController {
         LoggerService.log(Level.INFO, "Availability for video with ID '"+id+"' was changed to '" + isAvailable+ "' by '"+principal.getName()+"'");
         VideoDetails videoDetails = videoDetailsService.getById(id);
         return new ResponseEntity<>(videoDetails, HttpStatus.OK);
+    }
+
+    @PostMapping("/edit")
+    public ResponseEntity<?> editVideo(@RequestParam("id") long id,
+                                       @RequestParam("title") String title,
+                                       @RequestParam("description") String description,
+                                       Principal principal){
+        if (principal != null){
+            try{
+                User user = userService.getUser(principal.getName());
+                switch (user.getRole()){
+                    case ADMINISTRATOR:
+                    case MODERATOR: {
+                        VideoDetails videoDetails = videoDetailsService.getById(id);
+                        videoDetails.setTitle(title);
+                        videoDetails.setDescription(description);
+                        videoDetails.setAvailable(false);
+                        videoDetailsService.save(videoDetails);
+                        LoggerService.log(Level.INFO, "Video with ID '"+id+"' was edited by '"+user.getUsername()+"'");
+                        return new ResponseEntity<>(videoDetails, HttpStatus.OK);
+                    }
+                    case CREATOR:{
+                        VideoDetails videoDetails = videoDetailsService.getById(id);
+                        if (videoDetails.getAuthor().getUsername().equals(user.getUsername())){
+                            videoDetails.setTitle(title);
+                            videoDetails.setDescription(description);
+                            videoDetails.setAvailable(false);
+                            videoDetailsService.save(videoDetails);
+                            LoggerService.log(Level.INFO, "Video with ID '"+id+"' was edited by '"+user.getUsername()+"'");
+                            return new ResponseEntity<>(videoDetails, HttpStatus.OK);
+                        } else {
+                            LoggerService.log(Level.ERROR, "User '" + principal.getName() + "' has not permissions to run this operation.");
+                            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+                        }
+                    }
+                }
+
+            } catch (NullPointerException e){
+                LoggerService.log(Level.ERROR, "User '" + principal.getName() + "' has not permissions to run this operation.");
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            }
+        } else {
+            LoggerService.log(Level.ERROR, "Unauthorised user has not permissions to run this operation.");
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return null;
     }
 }
