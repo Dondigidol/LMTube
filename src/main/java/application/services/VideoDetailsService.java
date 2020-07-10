@@ -23,14 +23,9 @@ public class VideoDetailsService {
         return videoDetailsRepository.findAll();
     }
 
-    public VideoDetails getById(long id, boolean authenticated){
+    public VideoDetails getById(long id){
         Optional<VideoDetails> vd = videoDetailsRepository.findById(id);
-        if (vd.isPresent()){
-            if (vd.get().isAvailable() || authenticated) return vd.get();
-            //else throw new VideoIdException("Видео с ID '" + id + "' недоступно для просмотра");
-            else throw new VideoIdException("Видео снято с публикации и недоступно для просмотра.");
-        }
-        else throw new VideoIdException("Видео не найдено, попробуйте воспользоваться поиском.");
+        return vd.orElse(null);
     }
 
     public List<VideoDetails> getVideos(String title, boolean isAvailable){
@@ -38,7 +33,6 @@ public class VideoDetailsService {
     }
 
     public List<VideoDetails> getRecommendations(long id){
-        System.out.println("sadfasdfa");
         return videoDetailsRepository.findRecommendations(id);
     }
 
