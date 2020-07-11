@@ -1,14 +1,12 @@
 package application.controllers;
 
-import application.entities.Poster;
 import application.entities.User;
 import application.entities.Video;
 import application.entities.VideoDetails;
 import application.exceptions.VideoIdException;
-import application.payload.VideoUploadRequest;
+import application.payload.VideoEditRequest;
 import application.security.JwtTokenProvider;
 import application.services.*;
-import application.validators.UploadFormValidator;
 import org.apache.logging.log4j.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
@@ -16,8 +14,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.Errors;
-import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -44,18 +40,6 @@ public class RestVideoController {
 
     @Autowired
     private MapValidationErrorService mapValidationErrorService;
-
-    @Autowired
-    private UploadFormValidator uploadFormValidator;
-
-    @InitBinder
-    protected void initBinderVideoUpload(WebDataBinder binder){
-        binder.setValidator(uploadFormValidator);
-    }
-
-    @Autowired
-    private JwtTokenProvider tokenProvider;
-
 
     @GetMapping
     public ResponseEntity<List<VideoDetails>> getVideos(){
@@ -206,37 +190,7 @@ public class RestVideoController {
         return new ResponseEntity<>(recommendedVideos, HttpStatus.OK);
     }
 
-    @PostMapping("/upload")
-    public ResponseEntity<?> uploadForm(@Valid  VideoUploadRequest videoUploadRequest,
-                                        BindingResult result,
-                                        Principal principal){
 
-        try {
-            ResponseEntity<?> errorMap = mapValidationErrorService.validate(result);
-            if (errorMap != null){
-                return  errorMap;
-            }
-
-            User user = userService.getUser(principal.getName());
-            List<Video> videosList = videoService.upload(videoUploadRequest.getVideoFile());
-            Poster poster = posterService.upload(videoUploadRequest.getPosterFile());
-
-            VideoDetails videoDetails = new VideoDetails();
-            videoDetails.setTitle(videoUploadRequest.getTitle());
-            videoDetails.setDescription(videoUploadRequest.getDescription());
-            videoDetails.setPoster(poster);
-            videoDetails.setVideos(videosList);
-            videoDetails.setAuthor(user);
-            videoDetailsService.save(videoDetails);
-            LoggerService.log(Level.INFO, user.getUsername() + ": Video with ID '"+ videoDetails.getId() +"' was uploaded.");
-            return new ResponseEntity<>(videoDetails, HttpStatus.OK);
-        } catch (NullPointerException e){
-            LoggerService.log(Level.ERROR, e.getMessage());
-        }
-
-        return null;
-
-    }
 
     @PostMapping("/availability")
     public ResponseEntity<?> setVideoAvailability(@RequestParam ("id") long id,
@@ -271,19 +225,23 @@ public class RestVideoController {
     }
 
     @PostMapping("/edit")
-    public ResponseEntity<?> editVideo(@RequestParam("id") long id,
-                                       @RequestParam("title") String title,
-                                       @RequestParam("description") String description,
+    public ResponseEntity<?> editVideo(@Valid @RequestBody VideoEditRequest videoEditRequest,
+                                       BindingResult result,
                                        Principal principal){
+
+        ResponseEntity<?> errorMap = mapValidationErrorService.validate(result);
+        if (errorMap != null)
+            return errorMap;
         if (principal != null){
+            long id = videoEditRequest.getId();
             try{
                 User user = userService.getUser(principal.getName());
                 switch (user.getRole()){
                     case ADMINISTRATOR:
                     case MODERATOR: {
                         VideoDetails videoDetails = videoDetailsService.getById(id);
-                        videoDetails.setTitle(title);
-                        videoDetails.setDescription(description);
+                        videoDetails.setTitle(videoEditRequest.getTitle());
+                        videoDetails.setDescription(videoEditRequest.getDescription());
                         videoDetails.setAvailable(false);
                         videoDetailsService.save(videoDetails);
                         LoggerService.log(Level.INFO, "Video with ID '"+id+"' was edited by '"+user.getUsername()+"'");
@@ -292,8 +250,8 @@ public class RestVideoController {
                     case CREATOR:{
                         VideoDetails videoDetails = videoDetailsService.getById(id);
                         if (videoDetails.getAuthor().getUsername().equals(user.getUsername())){
-                            videoDetails.setTitle(title);
-                            videoDetails.setDescription(description);
+                            videoDetails.setTitle(videoEditRequest.getTitle());
+                            videoDetails.setDescription(videoEditRequest.getDescription());
                             videoDetails.setAvailable(false);
                             videoDetailsService.save(videoDetails);
                             LoggerService.log(Level.INFO, "Video with ID '"+id+"' was edited by '"+user.getUsername()+"'");
