@@ -17,7 +17,6 @@ import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/poster")
-@CrossOrigin
 public class RestPosterController {
 
 

@@ -23,7 +23,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/video")
-@CrossOrigin
 public class RestVideoController {
 
     @Autowired

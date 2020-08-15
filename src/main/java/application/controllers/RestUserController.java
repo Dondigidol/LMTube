@@ -29,7 +29,6 @@ import static application.security.SecurityConstants.TOKEN_PREFIX;
 
 @RestController
 @RequestMapping("/api/user")
-@CrossOrigin
 public class RestUserController {
 
     @Autowired
@@ -90,6 +89,7 @@ public class RestUserController {
     @GetMapping("/videos")
     public ResponseEntity<?> getUserVideos(Principal principal){
         List<VideoDetails> videoDetails = videoDetailsService.getUserVideoDetails(principal.getName());
+        LoggerService.log(Level.INFO, "User '"+principal.getName()+"' has loaded his video list");
         return new ResponseEntity<>(videoDetails, HttpStatus.OK);
     }
 }

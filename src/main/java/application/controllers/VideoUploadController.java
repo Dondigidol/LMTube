@@ -21,7 +21,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/video")
-@CrossOrigin
 public class VideoUploadController {
 
     @Autowired
@@ -51,7 +50,6 @@ public class VideoUploadController {
     public ResponseEntity<?> uploadForm(@Valid VideoUploadRequest videoUploadRequest,
                                         BindingResult result,
                                         Principal principal){
-
         try {
             ResponseEntity<?> errorMap = mapValidationErrorService.validate(result);
             if (errorMap != null){

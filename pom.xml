@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.example</groupId>
-    <artifactId>LMTube</artifactId>
+    <artifactId>lmplay</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <parent>
@@ -14,11 +14,20 @@
         <version>2.2.5.RELEASE</version>
     </parent>
 
+    <properties>
+        <start-class>application.Lmplay</start-class>
+    </properties>
 
+
+    <packaging>war</packaging>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -69,7 +78,7 @@
     </dependencies>
 
     <build>
-        <finalName>LMTube</finalName>
+        <finalName>lmplay</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -99,21 +108,7 @@
                     </outputDirectory>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>libs/</classpathPrefix>
-                            <mainClass>application.LMTube</mainClass>
-                        </manifest>
-                    </archive>
-                    <finalName>lmtube</finalName>
-                </configuration>
-            </plugin>
+
         </plugins>
     </build>
 

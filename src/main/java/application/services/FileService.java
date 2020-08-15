@@ -26,6 +26,7 @@ public class FileService {
             fileOutputStream.write(buffer, 0, lengthRead);
             fileOutputStream.flush();
         }
+        System.out.println("Файл был сохранен: " + remotePath);
         return fileName;
     }
 

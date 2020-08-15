@@ -60,8 +60,9 @@ public class VideoService {
 
             for (Resolution resolution1: resolutions) {
                 if (resolution.getHeight() >= resolution1.getHeight()) {
-                    Map<String, Object> result = fFmpegService.convert(resolution1.getWidth(), resolution1.getHeight(), videoFileName);
                     Video video = new Video();
+                    Map<String, Object> result = fFmpegService.convert(resolution1.getWidth(), resolution1.getHeight(), videoFileName);
+
                     video.setName(videoFileName);
                     video.setContentLength((long) result.get("length"));
                     video.setMimeType((String) result.get("mimeType"));

@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.SQLOutput;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -61,13 +62,31 @@ public class FFmpegService{
 
         Path resultFilePath = Paths.get(path.toString()+"\\"+filename);
 
+
+        //long originalBitRate = checkBitRate(videosTempPath, filename);
+        Resolution originalResolution = checkVideoResolution(videosTempPath, filename);
+        long originalBitRate = calculateOriginalBitRate(originalResolution.getWidth(), originalResolution.getHeight(), width, height, checkBitRate(videosTempPath, filename));
+        long targetBitRate = calculateBitRate(width, height);
+        long bitRate;
+        System.out.println("original bitrate: " + originalBitRate + ", target bitrate: " + targetBitRate);
+
+        if (originalBitRate < targetBitRate){
+            bitRate = originalBitRate;
+            System.out.println("original bitrate");
+        } else {
+            bitRate = targetBitRate;
+            System.out.println("target bitrate");
+        }
+
         FFmpegBuilder builder = new FFmpegBuilder()
                 .setInput(probeResult)
                 .overrideOutputFiles(true)
                 .addOutput( resultFilePath.toString())
                 .setFormat(videoFormat)
+                .setVideoBitRate(bitRate)
+                .setVideoFrameRate(25,1)
                 //.addExtraArgs("-aspect", "16:9")
-                .addExtraArgs("-lavfi", "[0:v]scale=ih*16/9:-1,boxblur=luma_radius=min(h\\,w)/20:luma_power=1:chroma_radius=min(cw\\,ch)/20:chroma_power=1[bg];[bg][0:v]overlay=(W-w)/2:(H-h)/2,crop=h=iw*9/16")
+                .addExtraArgs("-lavfi", "[0:v]scale=ih*16/9:-1,boxblur=luma_radius=min(h\\,w)/20:luma_power=1:chroma_radius=min(cw\\,ch)/20:chroma_power=1[bg];[bg][0:v]overlay=(W-w)/2:(H-h)/2")
                 .setVideoResolution(width, height)
                 .done();
         FFmpegExecutor executor = new FFmpegExecutor(ffmpeg, ffprobe);
@@ -82,14 +101,54 @@ public class FFmpegService{
     }
 
     public Resolution checkVideoResolution(String path, String filename) throws IOException{
-        FFmpegProbeResult probeResult = ffprobe.probe(path + "\\" + filename);
-        FFmpegStream stream = probeResult.streams.get(0);
+        FFmpegProbeResult probeResult = ffprobe.probe(path + filename);
+        int width = 0;
+        int height = 0;
+        for (FFmpegStream stream1: probeResult.streams){
+            if (stream1.height>0 && stream1.width>0){
+                width = stream1.width;
+                height = stream1.height;
+            }
+        }
         Resolution resolution = new Resolution();
-        resolution.setWidth(stream.width);
-        resolution.setHeight(stream.height);
+        resolution.setWidth(width);
+        resolution.setHeight(height);
         return resolution;
+    }
 
+    private long checkBitRate(String path, String filename) throws IOException{
+        FFmpegProbeResult probeResult = ffprobe.probe(path + filename);
+        long frame = 0;
+        for (FFmpegStream stream: probeResult.streams){
+            System.out.println("sd"+stream.);
+            if (stream.bit_rate > frame) frame = stream.bit_rate;
+        }
 
+        return frame;
+    }
+
+    private long calculateBitRate(int width, int height){
+        double quality = 0.1;
+        int framesPerSecond = 25;
+        if (width * height == 0){
+            throw new NullPointerException("Video height or width is 0!");
+        }
+
+        long bitRate = (long)(quality * width * height * framesPerSecond);
+        return bitRate;
+
+    }
+
+    private long calculateOriginalBitRate(int originalWidth,
+                                          int originalHeight,
+                                          int targetWidth,
+                                          int targetHeight,
+                                          long originalBitRate){
+
+        int framesPerSec = 25;
+        double k = (double)originalBitRate / (originalWidth * originalHeight) * framesPerSec;
+        System.out.println(k);
+        return (long)(k * targetWidth * targetHeight * framesPerSec);
 
     }
 
