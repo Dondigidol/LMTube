@@ -68,14 +68,11 @@ public class FFmpegService{
         long originalBitRate = calculateOriginalBitRate(originalResolution.getWidth(), originalResolution.getHeight(), width, height, checkBitRate(videosTempPath, filename));
         long targetBitRate = calculateBitRate(width, height);
         long bitRate;
-        System.out.println("original bitrate: " + originalBitRate + ", target bitrate: " + targetBitRate);
 
         if (originalBitRate < targetBitRate){
             bitRate = originalBitRate;
-            System.out.println("original bitrate");
         } else {
             bitRate = targetBitRate;
-            System.out.println("target bitrate");
         }
 
         FFmpegBuilder builder = new FFmpegBuilder()
@@ -120,8 +117,9 @@ public class FFmpegService{
         FFmpegProbeResult probeResult = ffprobe.probe(path + filename);
         long frame = 0;
         for (FFmpegStream stream: probeResult.streams){
-            System.out.println("sd"+stream.);
-            if (stream.bit_rate > frame) frame = stream.bit_rate;
+            if (stream.bit_rate > frame) {
+                frame = stream.bit_rate;
+            }
         }
 
         return frame;
@@ -146,8 +144,7 @@ public class FFmpegService{
                                           long originalBitRate){
 
         int framesPerSec = 25;
-        double k = (double)originalBitRate / (originalWidth * originalHeight) * framesPerSec;
-        System.out.println(k);
+        double k = (double)originalBitRate / ((originalWidth * originalHeight) * framesPerSec);
         return (long)(k * targetWidth * targetHeight * framesPerSec);
 
     }

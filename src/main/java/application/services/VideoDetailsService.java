@@ -44,4 +44,8 @@ public class VideoDetailsService {
         videoDetailsRepository.setAvailability(id, available);
     }
 
+    public void incrementViews(long videoId){
+        videoDetailsRepository.incrementVideoViews(videoId);
+    }
+
 }

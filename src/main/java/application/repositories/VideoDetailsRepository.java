@@ -17,7 +17,7 @@ public interface VideoDetailsRepository extends CrudRepository<VideoDetails, Lon
     @Transactional
     @Modifying
     @Query("UPDATE VideoDetails SET views = views + 1 WHERE id = :id ")
-    void updateVideoViews(@Param("id") long id);
+    void incrementVideoViews(@Param("id") long id);
 
     @Query("SELECT vd FROM VideoDetails vd WHERE title LIKE Concat('%',:title,'%') AND available=:available")
     List<VideoDetails> getVideos(@Param("title") String title,

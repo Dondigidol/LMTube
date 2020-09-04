@@ -141,10 +141,8 @@ public class VideoService {
         Optional<VideoDetails> vd = videoDetailsRepository.findByFileNameAndResolution(videoFileName, resolution);
         if (vd.isPresent()){
             VideoDetails video = vd.get();
-            if (!sessionService.isPresent(video.getId())) {
-                videoDetailsRepository.updateVideoViews(video.getId());
-                sessionService.addToViews(video.getId());
-            }
+            sessionService.addToViews(video.getId());
+
         }
     }
 
